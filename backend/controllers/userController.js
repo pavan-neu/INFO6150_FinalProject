@@ -1,12 +1,17 @@
 // controllers/userController.js
-const User = require('../models/userModel');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const path = require("path");
+const fs = require("fs");
+const Event = require("../models/eventModel");
+const Ticket = require("../models/ticketModel");
+const Transaction = require("../models/transactionModel");
+const User = require("../models/userModel");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 // Generate JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d',
+    expiresIn: "30d",
   });
 };
 
@@ -17,35 +22,43 @@ const registerUser = async (req, res) => {
   try {
     const { name, username, email, password, role } = req.body;
 
+    // Email validation
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
     // Case-insensitive check for existing email
     const emailExists = await User.findOne({
-      email: { $regex: new RegExp(`^${email}$`, 'i') }
+      email: { $regex: new RegExp(`^${email}$`, "i") },
     });
-    
+
     if (emailExists) {
-      return res.status(400).json({ message: 'Email already registered' });
+      return res.status(400).json({ message: "Email already registered" });
     }
-    
+
     // Case-insensitive check for existing username
     const usernameExists = await User.findOne({
-      username: { $regex: new RegExp(`^${username}$`, 'i') }
+      username: { $regex: new RegExp(`^${username}$`, "i") },
     });
-    
+
     if (usernameExists) {
-      return res.status(400).json({ message: 'Username already taken' });
+      return res.status(400).json({ message: "Username already taken" });
     }
 
     // Password validation
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
-        message: 'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character'
+        message:
+          "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character",
       });
     }
 
     // Create new user - allow any valid role including admin
-    if (role && !['user', 'organizer', 'admin'].includes(role)) {
-      return res.status(400).json({ message: 'Invalid role specified' });
+    if (role && !["user", "organizer", "admin"].includes(role)) {
+      return res.status(400).json({ message: "Invalid role specified" });
     }
 
     const user = await User.create({
@@ -53,20 +66,31 @@ const registerUser = async (req, res) => {
       username,
       email,
       password,
-      role: role || 'user', // Allow admin role if specified
+      role: role || "user", // Allow admin role if specified
     });
 
     if (user) {
       res.status(201).json({
-        message: 'User created successfully',
+        message: "User created successfully",
         token: generateToken(user._id),
       });
     } else {
-      res.status(400).json({ message: 'Invalid user data' });
+      res.status(400).json({ message: "Invalid user data" });
     }
   } catch (error) {
-    console.error('Registration error:', error.message);
-    res.status(500).json({ message: 'Server error during registration' });
+    console.error("Registration error:", error.message);
+
+    // Check if it's a validation error
+    if (error.name === "ValidationError") {
+      // Extract the specific validation error message
+      const errorMessage = Object.values(error.errors)
+        .map((val) => val.message)
+        .join(", ");
+
+      return res.status(400).json({ message: errorMessage });
+    }
+
+    res.status(500).json({ message: "Server error during registration" });
   }
 };
 
@@ -80,34 +104,36 @@ const loginUser = async (req, res) => {
     // Find user by either email or username (case-insensitive)
     const user = await User.findOne({
       $or: [
-        { email: { $regex: new RegExp(`^${login}$`, 'i') } },
-        { username: { $regex: new RegExp(`^${login}$`, 'i') } }
-      ]
+        { email: { $regex: new RegExp(`^${login}$`, "i") } },
+        { username: { $regex: new RegExp(`^${login}$`, "i") } },
+      ],
     });
 
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     // Check if account is active
     if (!user.active) {
-      return res.status(401).json({ message: 'Account has been deactivated. Please contact support.' });
+      return res.status(401).json({
+        message: "Account has been deactivated. Please contact support.",
+      });
     }
 
     // Check password
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     // Return success message with token
     res.json({
-      message: 'Login successful',
-      token: generateToken(user._id)
+      message: "Login successful",
+      token: generateToken(user._id),
     });
   } catch (error) {
-    console.error('Login error:', error.message);
-    res.status(500).json({ message: 'Server error during login' });
+    console.error("Login error:", error.message);
+    res.status(500).json({ message: "Server error during login" });
   }
 };
 
@@ -116,7 +142,7 @@ const loginUser = async (req, res) => {
 // @access  Private
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const user = await User.findById(req.user._id).select("-password");
 
     if (user) {
       res.json({
@@ -126,14 +152,14 @@ const getUserProfile = async (req, res) => {
         email: user.email,
         role: user.role,
         profilePicture: user.profilePicture,
-        active: user.active
+        active: user.active,
       });
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
     }
   } catch (error) {
-    console.error('Profile retrieval error:', error.message);
-    res.status(500).json({ message: 'Server error retrieving profile' });
+    console.error("Profile retrieval error:", error.message);
+    res.status(500).json({ message: "Server error retrieving profile" });
   }
 };
 
@@ -143,28 +169,28 @@ const getUserProfile = async (req, res) => {
 const updateUserName = async (req, res) => {
   try {
     const { name } = req.body;
-    
+
     if (!name) {
-      return res.status(400).json({ message: 'Name is required' });
+      return res.status(400).json({ message: "Name is required" });
     }
 
     // Use findByIdAndUpdate to avoid triggering validation on other fields
     // The { new: true } option returns the updated document
     // The { runValidators: false } option prevents running validators
     const updatedUser = await User.findByIdAndUpdate(
-      req.user._id, 
-      { name }, 
+      req.user._id,
+      { name },
       { new: true, runValidators: false }
     );
 
     if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    res.json({ message: 'Name updated successfully' });
+    res.json({ message: "Name updated successfully" });
   } catch (error) {
-    console.error('Name update error:', error.message);
-    res.status(500).json({ message: 'Server error updating name' });
+    console.error("Name update error:", error.message);
+    res.status(500).json({ message: "Server error updating name" });
   }
 };
 
@@ -174,19 +200,27 @@ const updateUserName = async (req, res) => {
 const updateUserEmail = async (req, res) => {
   try {
     const { email } = req.body;
-    
+
     if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    // Email validation
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
     }
 
     // Case-insensitive check for duplicate email
     const emailExists = await User.findOne({
-      email: { $regex: new RegExp(`^${email}$`, 'i') },
-      _id: { $ne: req.user._id }
+      email: { $regex: new RegExp(`^${email}$`, "i") },
+      _id: { $ne: req.user._id },
     });
-    
+
     if (emailExists) {
-      return res.status(400).json({ message: 'Email already in use by another account' });
+      return res
+        .status(400)
+        .json({ message: "Email already in use by another account" });
     }
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -196,13 +230,24 @@ const updateUserEmail = async (req, res) => {
     );
 
     if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    res.json({ message: 'Email updated successfully' });
+    res.json({ message: "Email updated successfully" });
   } catch (error) {
-    console.error('Email update error:', error.message);
-    res.status(500).json({ message: 'Server error updating email' });
+    console.error("Email update error:", error.message);
+
+    // Check if it's a validation error
+    if (error.name === "ValidationError") {
+      // Extract the specific validation error message
+      const errorMessage = Object.values(error.errors)
+        .map((val) => val.message)
+        .join(", ");
+
+      return res.status(400).json({ message: errorMessage });
+    }
+
+    res.status(500).json({ message: "Server error updating email" });
   }
 };
 
@@ -212,19 +257,19 @@ const updateUserEmail = async (req, res) => {
 const updateUsername = async (req, res) => {
   try {
     const { username } = req.body;
-    
+
     if (!username) {
-      return res.status(400).json({ message: 'Username is required' });
+      return res.status(400).json({ message: "Username is required" });
     }
 
     // Case-insensitive check for duplicate username
     const usernameExists = await User.findOne({
-      username: { $regex: new RegExp(`^${username}$`, 'i') },
-      _id: { $ne: req.user._id }
+      username: { $regex: new RegExp(`^${username}$`, "i") },
+      _id: { $ne: req.user._id },
     });
-    
+
     if (usernameExists) {
-      return res.status(400).json({ message: 'Username already taken' });
+      return res.status(400).json({ message: "Username already taken" });
     }
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -234,13 +279,13 @@ const updateUsername = async (req, res) => {
     );
 
     if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    res.json({ message: 'Username updated successfully' });
+    res.json({ message: "Username updated successfully" });
   } catch (error) {
-    console.error('Username update error:', error.message);
-    res.status(500).json({ message: 'Server error updating username' });
+    console.error("Username update error:", error.message);
+    res.status(500).json({ message: "Server error updating username" });
   }
 };
 
@@ -250,16 +295,18 @@ const updateUsername = async (req, res) => {
 const updatePassword = async (req, res) => {
   try {
     const { password } = req.body;
-    
+
     if (!password) {
-      return res.status(400).json({ message: 'Password is required' });
+      return res.status(400).json({ message: "Password is required" });
     }
 
     // Validate password format manually
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
-        message: 'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character'
+        message:
+          "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character",
       });
     }
 
@@ -274,13 +321,13 @@ const updatePassword = async (req, res) => {
     );
 
     if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    res.json({ message: 'Password updated successfully' });
+    res.json({ message: "Password updated successfully" });
   } catch (error) {
-    console.error('Password update error:', error.message);
-    res.status(500).json({ message: 'Server error updating password' });
+    console.error("Password update error:", error.message);
+    res.status(500).json({ message: "Server error updating password" });
   }
 };
 
@@ -290,22 +337,33 @@ const updatePassword = async (req, res) => {
 const uploadProfileImage = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
+      return res.status(400).json({ message: "No file uploaded" });
     }
 
     const user = await User.findById(req.user._id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Delete old profile picture if it exists and is not the default
+    if (user.profilePicture && user.profilePicture !== "default-profile.png") {
+      const oldProfilePath = path.join(__dirname, "..", user.profilePicture);
+      if (fs.existsSync(oldProfilePath)) {
+        fs.unlinkSync(oldProfilePath);
+      }
     }
 
     // Update the user's profile picture field
-    user.profilePicture = req.file.path;
-    await user.save();
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { profilePicture: req.file.path },
+      { new: true, runValidators: false }
+    );
 
-    res.json({ message: 'Profile image uploaded successfully' });
+    res.json({ message: "Profile image uploaded successfully" });
   } catch (error) {
-    console.error('Profile image upload error:', error.message);
-    res.status(500).json({ message: 'Server error uploading profile image' });
+    console.error("Profile image upload error:", error.message);
+    res.status(500).json({ message: "Server error uploading profile image" });
   }
 };
 
@@ -314,11 +372,11 @@ const uploadProfileImage = async (req, res) => {
 // @access  Private/Admin
 const getUsers = async (req, res) => {
   try {
-    const users = await User.find({}).select('-password');
+    const users = await User.find({}).select("-password");
     res.json(users);
   } catch (error) {
-    console.error('Get users error:', error.message);
-    res.status(500).json({ message: 'Server error retrieving users' });
+    console.error("Get users error:", error.message);
+    res.status(500).json({ message: "Server error retrieving users" });
   }
 };
 
@@ -327,16 +385,16 @@ const getUsers = async (req, res) => {
 // @access  Private/Admin
 const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('-password');
-    
+    const user = await User.findById(req.params.id).select("-password");
+
     if (user) {
       res.json(user);
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
     }
   } catch (error) {
-    console.error('Get user by ID error:', error.message);
-    res.status(500).json({ message: 'Server error retrieving user' });
+    console.error("Get user by ID error:", error.message);
+    res.status(500).json({ message: "Server error retrieving user" });
   }
 };
 
@@ -348,22 +406,30 @@ const updateUser = async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    // Check for duplicate email if being updated
+    // Check for duplicate email if being updated (with case-insensitive check)
     if (req.body.email && req.body.email !== user.email) {
-      const emailExists = await User.findOne({ email: req.body.email });
+      const emailExists = await User.findOne({
+        email: { $regex: new RegExp(`^${req.body.email}$`, "i") },
+        _id: { $ne: req.params.id },
+      });
       if (emailExists) {
-        return res.status(400).json({ message: 'Email already in use by another account' });
+        return res
+          .status(400)
+          .json({ message: "Email already in use by another account" });
       }
     }
-    
-    // Check for duplicate username if being updated
+
+    // Check for duplicate username if being updated (with case-insensitive check)
     if (req.body.username && req.body.username !== user.username) {
-      const usernameExists = await User.findOne({ username: req.body.username });
+      const usernameExists = await User.findOne({
+        username: { $regex: new RegExp(`^${req.body.username}$`, "i") },
+        _id: { $ne: req.params.id },
+      });
       if (usernameExists) {
-        return res.status(400).json({ message: 'Username already taken' });
+        return res.status(400).json({ message: "Username already taken" });
       }
     }
 
@@ -371,24 +437,26 @@ const updateUser = async (req, res) => {
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
     user.username = req.body.username || user.username;
-    
+
     // Admin can update role if provided
     if (req.body.role) {
-      if (!['user', 'organizer', 'admin'].includes(req.body.role)) {
-        return res.status(400).json({ message: 'Invalid role specified' });
+      if (!["user", "organizer", "admin"].includes(req.body.role)) {
+        return res.status(400).json({ message: "Invalid role specified" });
       }
       user.role = req.body.role;
     }
-    
+
     // Admin can update active status
     user.active = req.body.active !== undefined ? req.body.active : user.active;
-    
+
     // Admin can reset password if needed
     if (req.body.password) {
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      const passwordRegex =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
       if (!passwordRegex.test(req.body.password)) {
         return res.status(400).json({
-          message: 'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character'
+          message:
+            "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character",
         });
       }
       user.password = req.body.password;
@@ -397,11 +465,11 @@ const updateUser = async (req, res) => {
     await user.save();
 
     res.json({
-      message: 'User updated successfully'
+      message: "User updated successfully",
     });
   } catch (error) {
-    console.error('Admin update user error:', error.message);
-    res.status(500).json({ message: 'Server error updating user' });
+    console.error("Admin update user error:", error.message);
+    res.status(500).json({ message: "Server error updating user" });
   }
 };
 
@@ -412,18 +480,56 @@ const deleteUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
 
-    if (user) {
-      // Instead of actual deletion, set active status to false
-      user.active = false;
-      await user.save();
-      
-      res.json({ message: 'User deactivated successfully' });
-    } else {
-      res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    // Delete user's profile picture if exists
+    if (user.profilePicture && user.profilePicture !== "default-profile.png") {
+      const profilePath = path.join(__dirname, "..", user.profilePicture);
+      if (fs.existsSync(profilePath)) {
+        fs.unlinkSync(profilePath);
+      }
+    }
+
+    // Delete all user's tickets
+    await Ticket.deleteMany({ user: user._id });
+
+    // Delete all user's transactions
+    await Transaction.deleteMany({ user: user._id });
+
+    // If user is organizer, handle their events
+    if (user.role === "organizer") {
+      const events = await Event.find({ organizer: user._id });
+
+      // For each event
+      for (const event of events) {
+        // Delete event image if exists
+        if (event.imageUrl && event.imageUrl !== "placeholder.jpg") {
+          const imagePath = path.join(__dirname, "..", event.imageUrl);
+          if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+          }
+        }
+
+        // Delete all tickets for this event
+        await Ticket.deleteMany({ event: event._id });
+
+        // Delete all transactions for this event
+        await Transaction.deleteMany({ event: event._id });
+
+        // Delete the event
+        await Event.findByIdAndDelete(event._id);
+      }
+    }
+
+    // Finally, delete the user
+    await User.findByIdAndDelete(user._id);
+
+    res.json({ message: "User and all related data permanently deleted" });
   } catch (error) {
-    console.error('Delete user error:', error.message);
-    res.status(500).json({ message: 'Server error deleting user' });
+    console.error("Delete user error:", error.message);
+    res.status(500).json({ message: "Server error deleting user" });
   }
 };
 
@@ -439,5 +545,5 @@ module.exports = {
   getUsers,
   getUserById,
   updateUser,
-  deleteUser
+  deleteUser,
 };
