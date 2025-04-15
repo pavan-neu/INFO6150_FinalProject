@@ -1,0 +1,70 @@
+/* src/components/home/CategorySection.css */
+.category-section {
+  background-color: #f8f9fa;
+  padding: 4rem 0;
+}
+
+.category-card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  padding: 1rem;
+}
+
+.category-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.category-link:hover .category-card {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.category-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1.5rem;
+  flex-shrink: 0;
+  font-size: 1.5rem;
+}
+
+.category-info {
+  flex-grow: 1;
+}
+
+.category-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: #333;
+}
+
+.category-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .category-card {
+    padding: 0.75rem;
+  }
+
+  .category-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+    margin-right: 1rem;
+  }
+
+  .category-name {
+    font-size: 1.1rem;
+  }
+}

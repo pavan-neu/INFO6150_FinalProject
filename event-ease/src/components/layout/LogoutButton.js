@@ -13,8 +13,12 @@ const LogoutButton = () => {
   };
 
   return (
-    <Button variant="outline-light" onClick={handleLogout} className="ms-2">
-      Logout
+    <Button
+      variant="outline-light"
+      onClick={handleLogout}
+      className="ms-2 logout-btn"
+    >
+      <i className="bi bi-box-arrow-right me-1"></i> Logout
     </Button>
   );
 };

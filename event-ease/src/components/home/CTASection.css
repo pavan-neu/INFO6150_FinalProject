@@ -1,0 +1,56 @@
+/* src/components/home/CTASection.css */
+.cta-section {
+  padding: 5rem 0;
+}
+
+.cta-register {
+  background-color: #f8f9fa;
+}
+
+.cta-organize {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.cta-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.cta-subtitle {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.cta-button {
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.cta-image-container {
+  text-align: center;
+  position: relative;
+}
+
+.cta-image {
+  border-radius: 10px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.cta-organize .cta-image {
+  border: 5px solid white;
+}
+
+@media (max-width: 992px) {
+  .cta-section {
+    padding: 3rem 0;
+  }
+
+  .cta-title {
+    font-size: 2rem;
+  }
+}
