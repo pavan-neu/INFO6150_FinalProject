@@ -1,0 +1,30 @@
+// src/components/common/ProtectedRoute.js
+import { Navigate, useLocation } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
+
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
+  const { currentUser, loading, isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    // Could return a loading spinner here
+    return <div>Loading...</div>;
+  }
+
+  // Check if user is authenticated
+  if (!isAuthenticated) {
+    // Redirect to login page with the return path
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // If roles are specified, check if user has required role
+  if (allowedRoles.length > 0 && !allowedRoles.includes(currentUser.role)) {
+    // Redirect to unauthorized page
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  // User is authenticated and authorized, render the protected content
+  return children;
+};
+
+export default ProtectedRoute;
