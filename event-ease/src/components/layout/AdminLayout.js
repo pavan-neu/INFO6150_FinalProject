@@ -63,8 +63,19 @@ const AdminLayout = ({ children }) => {
                     active={location.pathname.startsWith("/admin/events")}
                     className="border-bottom"
                   >
-                    <i className="bi bi-calendar-event me-2"></i> Event
-                    Management
+                    <i className="bi bi-calendar-event me-2"></i> Event Management
+                    {location.pathname.startsWith("/admin/events") && (
+                      <div className="ms-4 mt-2">
+                        <Nav.Link
+                          as={Link}
+                          to="/admin/events/featured"
+                          active={location.pathname === "/admin/events/featured"}
+                          className="small"
+                        >
+                          <i className="bi bi-star me-2"></i> Featured Events
+                        </Nav.Link>
+                      </div>
+                    )}
                   </Nav.Link>
                   <Nav.Link
                     as={Link}

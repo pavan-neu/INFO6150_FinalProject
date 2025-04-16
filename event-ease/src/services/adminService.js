@@ -6,7 +6,6 @@ import { jwtDecode } from "jwt-decode";
 const isTokenValid = () => {
   const token = localStorage.getItem("token");
   if (!token) return false;
-
   try {
     const decoded = jwtDecode(token);
     const currentTime = Date.now() / 1000;
@@ -31,10 +30,8 @@ export const getUsers = async (params = {}) => {
     if (!isTokenValid()) {
       console.warn("Invalid or expired token when fetching users");
     }
-
     // Make sure headers are set before the request
     ensureAuthHeaders();
-
     const response = await axios.get("/users", { params });
     return response.data;
   } catch (error) {
@@ -48,7 +45,6 @@ export const getUserById = async (userId) => {
   try {
     // Ensure auth headers are set
     ensureAuthHeaders();
-
     const response = await axios.get(`/users/${userId}`);
     return response.data;
   } catch (error) {
@@ -62,7 +58,6 @@ export const updateUser = async (userId, userData) => {
   try {
     // Ensure auth headers are set
     ensureAuthHeaders();
-
     const response = await axios.put(`/users/${userId}`, userData);
     return response.data;
   } catch (error) {
@@ -76,7 +71,6 @@ export const deleteUser = async (userId) => {
   try {
     // Ensure auth headers are set
     ensureAuthHeaders();
-
     const response = await axios.delete(`/users/${userId}`);
     return response.data;
   } catch (error) {
@@ -86,13 +80,13 @@ export const deleteUser = async (userId) => {
 };
 
 // Feature or unfeature event (admin only)
-export const featureEvent = async (eventId, isFeatured = true) => {
+export const featureEvent = async (eventId, isFeatured = true, featureNote = "") => {
   try {
     // Ensure auth headers are set
     ensureAuthHeaders();
-
     const response = await axios.put(`/events/${eventId}/feature`, {
       isFeatured,
+      featureNote
     });
     return response.data;
   } catch (error) {
@@ -101,44 +95,89 @@ export const featureEvent = async (eventId, isFeatured = true) => {
   }
 };
 
-// Get all tickets with pagination (admin only)
+// Update getAllTickets in adminService.js
 export const getAllTickets = async (params = {}) => {
   try {
     // Ensure auth headers are set
     ensureAuthHeaders();
-
     const response = await axios.get("/tickets", { params });
     return response.data;
   } catch (error) {
+    // If it's a 404, interpret as "no tickets yet" 
+    if (error.response?.status === 404) {
+      return {
+        tickets: [],
+        pages: 0,
+        total: 0,
+        countsByStatus: {
+          reserved: 0,
+          paid: 0,
+          used: 0,
+          cancelled: 0
+        }
+      };
+    }
     console.error("Error fetching tickets:", error);
     throw error;
   }
 };
 
-// Get all transactions with pagination (admin only)
+// Update getAllTransactions similarly
 export const getAllTransactions = async (params = {}) => {
   try {
     // Ensure auth headers are set
     ensureAuthHeaders();
-
     const response = await axios.get("/transactions", { params });
     return response.data;
   } catch (error) {
+    // If it's a 404, interpret as "no transactions yet"
+    if (error.response?.status === 404) {
+      return {
+        transactions: [],
+        pages: 0,
+        total: 0,
+        totalRevenue: 0
+      };
+    }
     console.error("Error fetching transactions:", error);
     throw error;
   }
 };
-
 // Cancel transaction (admin only)
 export const cancelTransaction = async (transactionId) => {
   try {
     // Ensure auth headers are set
     ensureAuthHeaders();
-
     const response = await axios.put(`/transactions/${transactionId}/cancel`);
     return response.data;
   } catch (error) {
     console.error("Error cancelling transaction:", error);
+    throw error;
+  }
+};// Add these functions to your existing adminService.js
+
+// Mark ticket as used (admin only)
+export const markTicketAsUsed = async (ticketId) => {
+  try {
+    // Ensure auth headers are set
+    ensureAuthHeaders();
+    const response = await axios.put(`/tickets/${ticketId}/mark-used`);
+    return response.data;
+  } catch (error) {
+    console.error("Error marking ticket as used:", error);
+    throw error;
+  }
+};
+
+// Cancel ticket (admin only)
+export const cancelTicket = async (ticketId) => {
+  try {
+    // Ensure auth headers are set
+    ensureAuthHeaders();
+    const response = await axios.put(`/tickets/${ticketId}/cancel`);
+    return response.data;
+  } catch (error) {
+    console.error("Error cancelling ticket:", error);
     throw error;
   }
 };
