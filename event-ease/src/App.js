@@ -31,6 +31,13 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 // Import other admin pages as needed
 import ComponentsDemo from "./pages/public/ComponentsDemo";
 
+import EventsPage from "./pages/public/EventsPage";
+import EventDetailPage from "./pages/public/EventDetailPage";
+
+import AboutPage from "./pages/public/AboutPage";
+import FAQPage from "./pages/public/FAQPage";
+import ContactPage from "./pages/public/ContactPage";
+
 function App() {
   return (
     <AuthProvider>
@@ -76,6 +83,11 @@ function App() {
             <Route path="/components-demo" element={<ComponentsDemo />} />
 
             {/* Add more routes as needed */}
+            <Route path="/events" element={<EventsPage />} />
+            <Route path="/events/:id" element={<EventDetailPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/faq" element={<FAQPage />} />
+            <Route path="/contact" element={<ContactPage />} />
           </Routes>
         </main>
         <Footer />
