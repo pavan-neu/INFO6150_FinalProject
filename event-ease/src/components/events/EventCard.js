@@ -1,7 +1,7 @@
 // src/components/events/EventCard.js
 import { Card, Badge } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { formatDate, formatCurrency } from "../../utils/formatters";
+import { formatCurrency } from "../../utils/formatters";
 import "./EventCard.css";
 
 const EventCard = ({ event }) => {

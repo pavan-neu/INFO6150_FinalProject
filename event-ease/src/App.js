@@ -41,6 +41,10 @@ import AboutPage from "./pages/public/AboutPage";
 import FAQPage from "./pages/public/FAQPage";
 import ContactPage from "./pages/public/ContactPage";
 
+import UserTicketsPage from "./pages/user/UserTicketsPage";
+import TicketDetailPage from "./pages/user/TicketDetailPage";
+import TicketCancellationPage from "./pages/user/TicketCancellationPage";
+
 function App() {
   return (
     <AuthProvider>
@@ -94,6 +98,30 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
                     <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tickets"
+                element={
+                  <ProtectedRoute>
+                    <UserTicketsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tickets/:ticketId"
+                element={
+                  <ProtectedRoute>
+                    <TicketDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tickets/:ticketId/cancel"
+                element={
+                  <ProtectedRoute>
+                    <TicketCancellationPage />
                   </ProtectedRoute>
                 }
               />

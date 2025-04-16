@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import { getEvents } from "../../services/eventService";
 import EventList from "../../components/events/EventList";
@@ -24,7 +24,7 @@ const EventsPage = () => {
   const limit = 6; // Events per page
 
   // Fetch events with filters
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -126,12 +126,12 @@ const EventsPage = () => {
       setLoading(false);
       console.error("Error fetching events:", err);
     }
-  };
+  }, [category, dateRange, limit, page, priceRange, searchQuery]);
 
   // Load events when page or filters change
   useEffect(() => {
     fetchEvents();
-  }, [page, category, priceRange, dateRange]);
+  }, [fetchEvents, page, category, priceRange, dateRange]);
 
   // Handle search
   const handleSearch = (query) => {
@@ -174,7 +174,7 @@ const EventsPage = () => {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [fetchEvents, searchQuery]);
 
   // Check if any filters are active
   const isFiltering =
