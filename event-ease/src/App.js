@@ -45,6 +45,9 @@ import UserTicketsPage from "./pages/user/UserTicketsPage";
 import TicketDetailPage from "./pages/user/TicketDetailPage";
 import TicketCancellationPage from "./pages/user/TicketCancellationPage";
 
+import UserTransactionsPage from "./pages/user/UserTransactionsPage";
+import TransactionDetailPage from "./pages/user/TransactionDetailPage";
+
 function App() {
   return (
     <AuthProvider>
@@ -122,6 +125,22 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <TicketCancellationPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/transactions"
+                element={
+                  <ProtectedRoute>
+                    <UserTransactionsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/transactions/:transactionId"
+                element={
+                  <ProtectedRoute>
+                    <TransactionDetailPage />
                   </ProtectedRoute>
                 }
               />
