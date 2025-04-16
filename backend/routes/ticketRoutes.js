@@ -4,6 +4,7 @@ const {
   bookTicket,
   getMyTickets,
   getTicketById,
+  getTicketByNumber,
   cancelTicket,
   verifyTicket,
   markTicketAsUsed,
@@ -21,5 +22,6 @@ router.get("/:id", protect, getTicketById);
 router.put("/:id/cancel", protect, cancelTicket);
 router.get("/:id/verify", protect, verifyTicket);
 router.put("/:id/mark-used", protect, markTicketAsUsed);
+router.get("/by-number/:ticketNumber", protect, getTicketByNumber);
 
 module.exports = router;

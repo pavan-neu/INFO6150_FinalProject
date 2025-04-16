@@ -35,3 +35,31 @@ export const getTransactionStatus = async (transactionId) => {
     throw error;
   }
 };
+
+// Get event transactions (organizer only)
+export const getEventTransactions = async (eventId, page = 1, limit = 100) => {
+  try {
+    const response = await axios.get(`/transactions/event/${eventId}`, {
+      params: { page, limit },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching event transactions:", error);
+    throw error.response?.data?.message || "Error fetching event transactions";
+  }
+};
+
+// Create transaction
+export const createTransaction = async (ticketId, paymentMethod, paymentId) => {
+  try {
+    const response = await axios.post("/transactions", {
+      ticketId,
+      paymentMethod,
+      paymentId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error creating transaction:", error);
+    throw error.response?.data?.message || "Error creating transaction";
+  }
+};

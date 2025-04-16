@@ -275,6 +275,22 @@ const OrganizerEventsPage = () => {
                           >
                             View
                           </Button>
+                          <Button
+                            as={Link}
+                            to={`/organizer/events/${event._id}/tickets`}
+                            variant="outline-info"
+                            size="sm"
+                          >
+                            Tickets
+                          </Button>
+                          <Button
+                            as={Link}
+                            to={`/organizer/events/${event._id}/sales`}
+                            variant="outline-success"
+                            size="sm"
+                          >
+                            Sales
+                          </Button>
                           {event.status === "active" && (
                             <Button
                               variant="outline-danger"
