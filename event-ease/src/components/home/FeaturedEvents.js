@@ -3,6 +3,7 @@ import { Row, Col, Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import EventCard from "../events/EventCard";
 import LoadingSpinner from "../ui/LoadingSpinner";
+import EmptyState from "./EmptyState";
 import "./FeaturedEvents.css";
 
 const FeaturedEvents = ({ events, loading, error }) => {
@@ -11,14 +12,31 @@ const FeaturedEvents = ({ events, loading, error }) => {
   }
 
   if (error) {
-    return <p className="text-center text-danger">{error}</p>;
+    return (
+      <div className="text-center py-5">
+        <p className="text-danger">{error}</p>
+      </div>
+    );
   }
 
   if (!events || events.length === 0) {
     return (
-      <div className="text-center py-5">
-        <p>No featured events available at the moment.</p>
-      </div>
+      <section className="featured-events-section py-5">
+        <Container>
+          <div className="section-header mb-4">
+            <h2 className="section-title">Featured Events</h2>
+            <p className="section-subtitle">
+              Discover our handpicked selection of exceptional events
+            </p>
+          </div>
+          <EmptyState
+            title="No Featured Events"
+            message="Stay tuned! We're working on bringing you some amazing featured events soon."
+            buttonText="Browse All Events"
+            icon="bi-stars"
+          />
+        </Container>
+      </section>
     );
   }
 

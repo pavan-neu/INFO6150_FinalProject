@@ -77,3 +77,24 @@ a:hover {
     margin: 0.5rem 0 !important;
   }
 }
+
+.placeholder-carousel {
+  height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+    url("https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80");
+  background-size: cover;
+  background-position: center;
+}
+
+@media (max-width: 768px) {
+  .placeholder-carousel {
+    height: 350px;
+  }
+
+  .placeholder-carousel h1 {
+    font-size: 2rem;
+  }
+}
