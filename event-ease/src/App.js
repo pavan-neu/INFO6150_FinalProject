@@ -51,6 +51,8 @@ import TransactionDetailPage from "./pages/user/TransactionDetailPage";
 import CreateEventPage from "./pages/organizer/CreateEventPage";
 import EditEventPage from "./pages/organizer/EditEventPage";
 import OrganizerEventsPage from "./pages/organizer/OrganizerEventsPage";
+import EventTicketsPage from "./pages/organizer/EventTicketsPage";
+import EventSalesPage from "./pages/organizer/EventSalesPage";
 
 function App() {
   return (
@@ -178,6 +180,18 @@ function App() {
                     <OrganizerEventsPage />
                   </ProtectedRoute>
                 }
+              />
+              <Route
+                path="/organizer/events/:eventId/tickets"
+                element={<EventTicketsPage />}
+              />
+              <Route
+                path="/organizer/tickets/:ticketId"
+                element={<TicketDetailPage />}
+              />
+              <Route
+                path="/organizer/events/:eventId/sales"
+                element={<EventSalesPage />}
               />
             </Routes>
           </main>

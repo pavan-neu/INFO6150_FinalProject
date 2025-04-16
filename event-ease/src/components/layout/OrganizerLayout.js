@@ -1,17 +1,27 @@
 // src/components/layout/OrganizerLayout.js
 import React from "react";
-import { Container, Row, Col, Nav } from "react-bootstrap";
+import { Container, Row, Col, Nav, Spinner } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 
 const OrganizerLayout = ({ children }) => {
-  const { currentUser } = useAuth();
+  const auth = useAuth();
   const location = useLocation();
 
   // Determine active link
   const isActive = (path) => {
     return location.pathname === path;
   };
+
+  // Handle null auth data gracefully
+  if (!auth || !auth.currentUser) {
+    return (
+      <Container className="text-center py-5">
+        <Spinner animation="border" variant="primary" />
+        <p className="mt-3">Loading user data...</p>
+      </Container>
+    );
+  }
 
   return (
     <Container fluid className="py-4">
@@ -31,8 +41,10 @@ const OrganizerLayout = ({ children }) => {
                     ></i>
                   </div>
                   <div>
-                    <h6 className="mb-0">{currentUser.name}</h6>
-                    <small className="text-muted">{currentUser.email}</small>
+                    <h6 className="mb-0">{auth.currentUser?.name || "User"}</h6>
+                    <small className="text-muted">
+                      {auth.currentUser?.email || ""}
+                    </small>
                   </div>
                 </div>
               </div>

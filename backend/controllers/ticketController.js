@@ -257,6 +257,26 @@ const verifyTicket = async (req, res) => {
   }
 };
 
+// @desc    Get a ticket by ticket number
+// @route   GET /api/tickets/by-number/:ticketNumber
+// @access  Private
+const getTicketByNumber = async (req, res) => {
+  try {
+    const ticket = await Ticket.findOne({
+      ticketNumber: req.params.ticketNumber,
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    res.json(ticket);
+  } catch (error) {
+    console.error("Get ticket by number error:", error.message);
+    res.status(500).json({ message: "Server error retrieving ticket" });
+  }
+};
+
 // @desc    Mark ticket as used
 // @route   PUT /api/tickets/:id/mark-used
 // @access  Private/Organizer
@@ -371,6 +391,7 @@ module.exports = {
   bookTicket,
   getMyTickets,
   getTicketById,
+  getTicketByNumber,
   cancelTicket,
   verifyTicket,
   markTicketAsUsed,
