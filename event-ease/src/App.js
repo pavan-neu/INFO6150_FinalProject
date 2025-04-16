@@ -34,6 +34,12 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagementPage from "./pages/admin/UserManagementPage";
 import UserDetailPage from "./pages/admin/UserDetailPage";
 import EventManagementPage from "./pages/admin/EventManagementPage";
+// Import new components at the top of your App.js file
+import AdminEventDetailPage from "./pages/admin/AdminEventDetailPage";
+import AdminFeaturedEventsPage from "./pages/admin/AdminFeaturedEventsPage";
+import AdminTicketsPage from "./pages/admin/AdminTicketsPage";
+import AdminTransactionsPage from "./pages/admin/AdminTransactionsPage";
+
 
 // Import other admin pages as needed
 import ComponentsDemo from "./pages/public/ComponentsDemo";
@@ -246,6 +252,38 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
                     <EventManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/events/:eventId"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <AdminEventDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/events/featured"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <AdminFeaturedEventsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/tickets"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <AdminTicketsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/transactions"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <AdminTransactionsPage />
                   </ProtectedRoute>
                 }
               />

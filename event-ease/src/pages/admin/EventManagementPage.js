@@ -26,6 +26,8 @@ const EventManagementPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [filterFeatured, setFilterFeatured] = useState("");
+  const [filterDateRange, setFilterDateRange] = useState("");
   const { showToast } = useToast();
 
   // Fetch events list
@@ -53,15 +55,56 @@ const EventManagementPage = () => {
       }
 
       const data = await getEvents(params);
-      setEvents(data.events || []);
-      setTotalPages(data.pages || 1);
+      let filteredEvents = data.events || [];
+      
+      // Client-side filtering for featured status
+      if (filterFeatured === "featured") {
+        filteredEvents = filteredEvents.filter(event => event.isFeatured);
+      } else if (filterFeatured === "not-featured") {
+        filteredEvents = filteredEvents.filter(event => !event.isFeatured);
+      }
+      
+      // Client-side filtering for date range
+      if (filterDateRange) {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        switch(filterDateRange) {
+          case "upcoming":
+            filteredEvents = filteredEvents.filter(event => new Date(event.startDate) >= today);
+            break;
+          case "past":
+            filteredEvents = filteredEvents.filter(event => new Date(event.startDate) < today);
+            break;
+          case "this-week":
+            const weekEnd = new Date(today);
+            weekEnd.setDate(today.getDate() + 7);
+            filteredEvents = filteredEvents.filter(event => {
+              const eventDate = new Date(event.startDate);
+              return eventDate >= today && eventDate <= weekEnd;
+            });
+            break;
+          case "this-month":
+            const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            filteredEvents = filteredEvents.filter(event => {
+              const eventDate = new Date(event.startDate);
+              return eventDate >= today && eventDate <= monthEnd;
+            });
+            break;
+          default:
+            break;
+        }
+      }
+      
+      setEvents(filteredEvents);
+      setTotalPages(Math.ceil(filteredEvents.length / 10));
       setLoading(false);
     } catch (err) {
       console.error("Error fetching events:", err);
       setError("Failed to load events. Please try again.");
       setLoading(false);
     }
-  }, [page, searchQuery, filterCategory, filterStatus]);
+  }, [page, searchQuery, filterCategory, filterStatus, filterFeatured, filterDateRange]);
 
   // Load events on mount and when dependencies change
   useEffect(() => {
@@ -88,6 +131,18 @@ const EventManagementPage = () => {
   // Handle status filter change
   const handleStatusFilterChange = (e) => {
     setFilterStatus(e.target.value);
+    setPage(1); // Reset to first page when filtering
+  };
+  
+  // Handle featured filter change
+  const handleFeaturedFilterChange = (e) => {
+    setFilterFeatured(e.target.value);
+    setPage(1); // Reset to first page when filtering
+  };
+  
+  // Handle date range filter change
+  const handleDateRangeFilterChange = (e) => {
+    setFilterDateRange(e.target.value);
     setPage(1); // Reset to first page when filtering
   };
 
@@ -154,51 +209,99 @@ const EventManagementPage = () => {
     <AdminLayout>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">Event Management</h2>
+        <div>
+          <Button
+            as={Link}
+            to="/admin/events/featured"
+            variant="outline-warning"
+            className="me-2"
+          >
+            <i className="bi bi-star me-1"></i> Featured Events
+          </Button>
+        </div>
       </div>
 
       {error && <Alert variant="danger">{error}</Alert>}
 
       <Card className="shadow-sm mb-4">
         <Card.Header>
-          <div className="row g-3 align-items-center">
-            <div className="col-md-6">
-              <InputGroup>
-                <InputGroup.Text>
-                  <i className="bi bi-search"></i>
-                </InputGroup.Text>
-                <Form.Control
-                  type="text"
-                  placeholder="Search events..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                />
-              </InputGroup>
-            </div>
+          <div className="mb-3">
+            <InputGroup>
+              <InputGroup.Text>
+                <i className="bi bi-search"></i>
+              </InputGroup.Text>
+              <Form.Control
+                type="text"
+                placeholder="Search events by title, organizer, or location..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+              />
+            </InputGroup>
+          </div>
+          
+          <div className="row g-3">
             <div className="col-md-3">
-              <Form.Select
-                value={filterCategory}
-                onChange={handleCategoryFilterChange}
-              >
-                <option value="">All Categories</option>
-                <option value="conference">Conference</option>
-                <option value="workshop">Workshop</option>
-                <option value="seminar">Seminar</option>
-                <option value="concert">Concert</option>
-                <option value="exhibition">Exhibition</option>
-                <option value="sport">Sport</option>
-                <option value="party">Party</option>
-                <option value="other">Other</option>
-              </Form.Select>
+              <Form.Group>
+                <Form.Label>Category</Form.Label>
+                <Form.Select
+                  value={filterCategory}
+                  onChange={handleCategoryFilterChange}
+                >
+                  <option value="">All Categories</option>
+                  <option value="conference">Conference</option>
+                  <option value="workshop">Workshop</option>
+                  <option value="seminar">Seminar</option>
+                  <option value="concert">Concert</option>
+                  <option value="exhibition">Exhibition</option>
+                  <option value="sport">Sport</option>
+                  <option value="party">Party</option>
+                  <option value="other">Other</option>
+                </Form.Select>
+              </Form.Group>
             </div>
+            
             <div className="col-md-3">
-              <Form.Select
-                value={filterStatus}
-                onChange={handleStatusFilterChange}
-              >
-                <option value="">All Statuses</option>
-                <option value="active">Active</option>
-                <option value="cancelled">Cancelled</option>
-              </Form.Select>
+              <Form.Group>
+                <Form.Label>Status</Form.Label>
+                <Form.Select
+                  value={filterStatus}
+                  onChange={handleStatusFilterChange}
+                >
+                  <option value="">All Statuses</option>
+                  <option value="active">Active</option>
+                  <option value="cancelled">Cancelled</option>
+                </Form.Select>
+              </Form.Group>
+            </div>
+            
+            <div className="col-md-3">
+              <Form.Group>
+                <Form.Label>Featured</Form.Label>
+                <Form.Select
+                  value={filterFeatured}
+                  onChange={handleFeaturedFilterChange}
+                >
+                  <option value="">All Events</option>
+                  <option value="featured">Featured Only</option>
+                  <option value="not-featured">Not Featured</option>
+                </Form.Select>
+              </Form.Group>
+            </div>
+            
+            <div className="col-md-3">
+              <Form.Group>
+                <Form.Label>Date Range</Form.Label>
+                <Form.Select
+                  value={filterDateRange}
+                  onChange={handleDateRangeFilterChange}
+                >
+                  <option value="">All Dates</option>
+                  <option value="upcoming">Upcoming</option>
+                  <option value="past">Past Events</option>
+                  <option value="this-week">This Week</option>
+                  <option value="this-month">This Month</option>
+                </Form.Select>
+              </Form.Group>
             </div>
           </div>
         </Card.Header>
@@ -216,7 +319,7 @@ const EventManagementPage = () => {
               ></i>
               <h4 className="mt-3">No Events Found</h4>
               <p className="text-muted mb-3">
-                {searchQuery || filterCategory || filterStatus
+                {searchQuery || filterCategory || filterStatus || filterFeatured || filterDateRange
                   ? "No events match your search or filter criteria."
                   : "There are no events in the system yet."}
               </p>
