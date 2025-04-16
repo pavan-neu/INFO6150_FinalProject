@@ -294,13 +294,29 @@ const updateUsername = async (req, res) => {
 // @access  Private
 const updatePassword = async (req, res) => {
   try {
-    const { password } = req.body;
+    const { currentPassword, password } = req.body;
 
-    if (!password) {
-      return res.status(400).json({ message: "Password is required" });
+    // Check if both passwords are provided
+    if (!currentPassword || !password) {
+      return res.status(400).json({
+        message: "Both current password and new password are required",
+      });
     }
 
-    // Validate password format manually
+    // Get the current user with password
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify the current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Current password is incorrect" });
+    }
+
+    // Validate new password format
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
@@ -310,24 +326,23 @@ const updatePassword = async (req, res) => {
       });
     }
 
-    // For password, we need to hash it before updating
+    // Hash the new password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const updatedUser = await User.findByIdAndUpdate(
+    // Use findByIdAndUpdate instead of save() to bypass schema validation
+    await User.findByIdAndUpdate(
       req.user._id,
       { password: hashedPassword },
-      { new: true, runValidators: false }
+      { runValidators: false }
     );
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
 
     res.json({ message: "Password updated successfully" });
   } catch (error) {
     console.error("Password update error:", error.message);
-    res.status(500).json({ message: "Server error updating password" });
+    res
+      .status(400)
+      .json({ message: "Error updating password: " + error.message });
   }
 };
 

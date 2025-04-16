@@ -1,47 +1,69 @@
 // src/pages/auth/LoginPage.js
-import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
-import useAuth from '../../hooks/useAuth';
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  Button,
+  Card,
+  Alert,
+  Spinner,
+} from "react-bootstrap";
+import useAuth from "../../hooks/useAuth";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
-    login: '',
-    password: ''
+    login: "",
+    password: "",
   });
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const { login, error, setError } = useAuth();
+
+  const { login, error, setError, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   // Get redirect path from location state or default to home
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || "/";
+
+  // Clear error when the component mounts
+  useEffect(() => {
+    setError(null);
+  }, [setError]);
 
   const handleChange = (e) => {
+    // Clear error when user starts typing
+    if (error) {
+      setError(null);
+    }
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    // Validate form
-    if (!formData.login || !formData.password) {
-      setError('Please enter both username/email and password');
-      setIsLoading(false);
+
+    // Prevent submitting while already loading
+    if (loading) {
       return;
     }
-    
+
+    // Validate form
+    if (!formData.login || !formData.password) {
+      setError("Please enter both username/email and password");
+      return;
+    }
+
     const success = await login(formData);
+
+    // Only navigate on success, the loading state will be managed by the auth context
     if (success) {
       navigate(from, { replace: true });
     }
-    
-    setIsLoading(false);
+    // If login failed, the auth context will handle setting loading to false
   };
 
   return (
@@ -51,9 +73,9 @@ const LoginPage = () => {
           <Card className="shadow auth-card">
             <Card.Body className="p-4">
               <h2 className="text-center mb-4">Login to EventEase</h2>
-              
+
               {error && <Alert variant="danger">{error}</Alert>}
-              
+
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">
                   <Form.Label>Username or Email</Form.Label>
@@ -64,6 +86,7 @@ const LoginPage = () => {
                     onChange={handleChange}
                     placeholder="Enter your username or email"
                     required
+                    disabled={loading}
                   />
                 </Form.Group>
 
@@ -76,19 +99,34 @@ const LoginPage = () => {
                     onChange={handleChange}
                     placeholder="Enter your password"
                     required
+                    disabled={loading}
                   />
                 </Form.Group>
 
-                <Button 
-                  variant="primary" 
-                  type="submit" 
+                <Button
+                  variant="primary"
+                  type="submit"
                   className="w-100 mt-3"
-                  disabled={isLoading}
+                  disabled={loading}
                 >
-                  {isLoading ? 'Logging in...' : 'Login'}
+                  {loading ? (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                        className="me-2"
+                      />
+                      Logging in...
+                    </>
+                  ) : (
+                    "Login"
+                  )}
                 </Button>
               </Form>
-              
+
               <div className="text-center mt-3">
                 <p>
                   Don't have an account? <Link to="/register">Sign up</Link>

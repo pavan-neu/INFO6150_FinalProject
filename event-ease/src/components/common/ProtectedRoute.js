@@ -1,14 +1,19 @@
 // src/components/common/ProtectedRoute.js
-import { Navigate, useLocation } from 'react-router-dom';
-import useAuth from '../../hooks/useAuth';
+import { Navigate, useLocation } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
+import { Spinner } from "react-bootstrap";
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const { currentUser, loading, isAuthenticated } = useAuth();
   const location = useLocation();
 
   if (loading) {
-    // Could return a loading spinner here
-    return <div>Loading...</div>;
+    // Return a proper loading spinner
+    return (
+      <div className="d-flex justify-content-center align-items-center min-vh-100">
+        <Spinner animation="border" variant="primary" />
+      </div>
+    );
   }
 
   // Check if user is authenticated
