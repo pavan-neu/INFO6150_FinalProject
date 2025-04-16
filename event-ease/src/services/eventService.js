@@ -52,11 +52,23 @@ export const searchEvents = async (
       url += `&query=${encodeURIComponent(query)}`;
     }
 
-    if (category) {
-      url += `&category=${encodeURIComponent(category)}`;
+    const response = await axios.get(url);
+
+    // Filter by category if provided
+    if (category && response.data && response.data.events) {
+      const filteredEvents = response.data.events.filter(
+        (event) => event.category === category
+      );
+
+      // Update the response data with filtered events
+      return {
+        ...response.data,
+        events: filteredEvents,
+        total: filteredEvents.length,
+        pages: Math.ceil(filteredEvents.length / limit),
+      };
     }
 
-    const response = await axios.get(url);
     return response.data;
   } catch (error) {
     console.error("Error searching events:", error);
@@ -67,7 +79,27 @@ export const searchEvents = async (
 // Get all events with optional filters
 export const getEvents = async (params = {}) => {
   try {
-    const response = await axios.get("/events", { params });
+    // If there's a category filter, we need to handle it specially
+    // because the backend might not support direct category filtering
+    const { category, ...otherParams } = params;
+
+    const response = await axios.get("/events", { params: otherParams });
+
+    // If category filter is provided, filter the results in the frontend
+    if (category && response.data && response.data.events) {
+      const filteredEvents = response.data.events.filter(
+        (event) => event.category === category
+      );
+
+      // Update the response data with filtered events
+      return {
+        ...response.data,
+        events: filteredEvents,
+        total: filteredEvents.length,
+        pages: Math.ceil(filteredEvents.length / (params.limit || 10)),
+      };
+    }
+
     return response.data;
   } catch (error) {
     console.error("Error fetching events:", error);
