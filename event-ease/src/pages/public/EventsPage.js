@@ -19,6 +19,7 @@ const EventsPage = () => {
   const [category, setCategory] = useState("");
   const [priceRange, setPriceRange] = useState({ min: null, max: null });
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  // eslint-disable-next-line no-unused-vars
   const [isSearching, setIsSearching] = useState(false);
   const [hasNoSearchResults, setHasNoSearchResults] = useState(false);
   const limit = 6; // Events per page

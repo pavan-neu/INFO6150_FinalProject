@@ -67,7 +67,11 @@ const createEvent = async (req, res) => {
     });
 
     if (event) {
-      res.status(201).json({ message: "Event created successfully" });
+      // Return the event ID along with the success message
+      res.status(201).json({
+        message: "Event created successfully",
+        eventId: event._id,
+      });
     } else {
       res.status(400).json({ message: "Invalid event data" });
     }
