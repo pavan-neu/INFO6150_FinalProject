@@ -106,3 +106,54 @@ export const getEvents = async (params = {}) => {
     throw error;
   }
 };
+
+// Create a new event
+export const createEvent = async (eventData) => {
+  try {
+    const response = await axios.post("/events", eventData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating event:", error);
+    throw error;
+  }
+};
+
+// Update an event
+export const updateEvent = async (eventId, eventData) => {
+  try {
+    const response = await axios.put(`/events/${eventId}`, eventData);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating event:", error);
+    throw error;
+  }
+};
+
+// Cancel an event
+export const cancelEvent = async (eventId) => {
+  try {
+    const response = await axios.put(`/events/${eventId}/cancel`);
+    return response.data;
+  } catch (error) {
+    console.error("Error cancelling event:", error);
+    throw error;
+  }
+};
+
+// Upload event image
+export const uploadEventImage = async (eventId, imageFile) => {
+  try {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+
+    const response = await axios.post(`/events/${eventId}/upload`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading event image:", error);
+    throw error;
+  }
+};

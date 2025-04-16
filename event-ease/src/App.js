@@ -48,6 +48,10 @@ import TicketCancellationPage from "./pages/user/TicketCancellationPage";
 import UserTransactionsPage from "./pages/user/UserTransactionsPage";
 import TransactionDetailPage from "./pages/user/TransactionDetailPage";
 
+import CreateEventPage from "./pages/organizer/CreateEventPage";
+import EditEventPage from "./pages/organizer/EditEventPage";
+import OrganizerEventsPage from "./pages/organizer/OrganizerEventsPage";
+
 function App() {
   return (
     <AuthProvider>
@@ -68,7 +72,6 @@ function App() {
               <Route path="/faq" element={<FAQPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/components-demo" element={<ComponentsDemo />} />
-
               {/* User Routes */}
               <Route
                 path="/dashboard"
@@ -141,6 +144,38 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <TransactionDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/organizer/dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["organizer", "admin"]}>
+                    <OrganizerDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/organizer/events/create"
+                element={
+                  <ProtectedRoute allowedRoles={["organizer", "admin"]}>
+                    <CreateEventPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/organizer/events/:eventId/edit"
+                element={
+                  <ProtectedRoute allowedRoles={["organizer", "admin"]}>
+                    <EditEventPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/organizer/events"
+                element={
+                  <ProtectedRoute allowedRoles={["organizer", "admin"]}>
+                    <OrganizerEventsPage />
                   </ProtectedRoute>
                 }
               />
