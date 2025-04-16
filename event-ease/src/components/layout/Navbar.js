@@ -4,17 +4,31 @@ import {
   Navbar as BootstrapNavbar,
   Nav,
   NavDropdown,
+  Spinner,
 } from "react-bootstrap";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
+import { useToast } from "../../context/ToastContext";
 import "./Navbar.css";
 
 const Navbar = () => {
-  const { currentUser, isAuthenticated, isAdmin, isOrganizer, logout } =
-    useAuth();
+  const {
+    currentUser,
+    isAuthenticated,
+    isAdmin,
+    isOrganizer,
+    logout,
+    loading,
+  } = useAuth();
+
+  const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
+    logout(() => {
+      showToast("Logged out successfully", "success");
+      navigate("/");
+    });
   };
 
   return (
@@ -53,7 +67,10 @@ const Navbar = () => {
           </Nav>
 
           <Nav className="ms-auto mobile-auth-nav">
-            {isAuthenticated ? (
+            {loading ? (
+              // Show spinner while loading authentication status
+              <Spinner animation="border" variant="light" size="sm" />
+            ) : isAuthenticated ? (
               <>
                 {/* Display user-specific options */}
                 <NavDropdown

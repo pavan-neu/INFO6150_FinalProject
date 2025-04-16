@@ -1,6 +1,8 @@
 // src/App.js
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
+import GlobalToast from "./components/ui/GlobalToast";
 
 // Layout Components
 import Navbar from "./components/layout/Navbar";
@@ -20,6 +22,7 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 
 // User Pages
 import UserDashboard from "./pages/user/UserDashboard";
+import ProfilePage from "./pages/user/ProfilePage";
 // Import other user pages as needed
 
 // Organizer Pages
@@ -41,57 +44,64 @@ import ContactPage from "./pages/public/ContactPage";
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Navbar />
-        <main className="min-vh-100">
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/unauthorized" element={<UnauthorizedPage />} />
+      <ToastProvider>
+        <Router>
+          <Navbar />
+          <GlobalToast />
+          <main className="min-vh-100">
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/unauthorized" element={<UnauthorizedPage />} />
+              <Route path="/events" element={<EventsPage />} />
+              <Route path="/events/:id" element={<EventDetailPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/components-demo" element={<ComponentsDemo />} />
 
-            {/* User Routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <UserDashboard />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Organizer Routes */}
-            <Route
-              path="/organizer/dashboard"
-              element={
-                <ProtectedRoute allowedRoles={["organizer", "admin"]}>
-                  <OrganizerDashboard />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Admin Routes */}
-            <Route
-              path="/admin/dashboard"
-              element={
-                <ProtectedRoute allowedRoles={["admin"]}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/components-demo" element={<ComponentsDemo />} />
-
-            {/* Add more routes as needed */}
-            <Route path="/events" element={<EventsPage />} />
-            <Route path="/events/:id" element={<EventDetailPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/faq" element={<FAQPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-          </Routes>
-        </main>
-        <Footer />
-      </Router>
+              {/* User Routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <UserDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Organizer Routes */}
+              <Route
+                path="/organizer/dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["organizer", "admin"]}>
+                    <OrganizerDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Admin Routes */}
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </main>
+          <Footer />
+        </Router>
+      </ToastProvider>
     </AuthProvider>
   );
 }
