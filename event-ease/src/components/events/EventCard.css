@@ -20,6 +20,7 @@
   position: relative;
   overflow: hidden;
   height: 200px;
+  background-color: #f0f0f0; /* Background color to prevent flashing */
 }
 
 .event-img {
@@ -27,6 +28,20 @@
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
+  background-color: #f0f0f0; /* Fallback color while loading */
+  min-height: 200px; /* Ensure there's a minimum height while loading */
+}
+
+/* Add a loading state style */
+.event-img::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f0f0f0;
+  z-index: 0;
 }
 
 .event-card:hover .event-img {
@@ -49,31 +64,32 @@
   padding: 15px;
 }
 
-.event-date {
+/* Updated horizontal date style - smaller, more compact */
+.event-date-horizontal {
   background-color: #fff;
-  border-radius: 8px;
-  padding: 8px 12px;
-  text-align: center;
+  border-radius: 5px;
+  padding: 5px 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: inline-flex;
   align-items: center;
-  min-width: 60px;
+  gap: 5px;
+  width: auto;
+  max-width: fit-content;
+  max-height: fit-content;
 }
 
-.event-date-day {
-  font-size: 1.5rem;
+.date-day {
+  font-size: 1.1rem;
   font-weight: 700;
-  line-height: 1;
   color: #333;
+  line-height: 1;
 }
 
-.event-date-month {
+.date-month {
   font-size: 0.8rem;
   font-weight: 600;
-  text-transform: uppercase;
   color: #6a2ce8;
+  line-height: 1;
 }
 
 .featured-tag {
@@ -146,6 +162,7 @@
   color: #333;
 }
 
+/* Updated availability badge styles */
 .availability-badge {
   padding: 0.5em 0.9em;
   font-size: 0.75rem;
@@ -153,22 +170,20 @@
   letter-spacing: 0.5px;
 }
 
+/* Stronger availability colors */
 .availability-badge.success {
-  background-color: rgba(40, 167, 69, 0.1);
-  color: #28a745;
-  border: 1px solid #28a745;
+  background-color: #28a745 !important;
+  color: white;
 }
 
 .availability-badge.warning {
-  background-color: rgba(255, 193, 7, 0.1);
-  color: #ffc107;
-  border: 1px solid #ffc107;
+  background-color: #ffc107 !important;
+  color: #212529;
 }
 
 .availability-badge.danger {
-  background-color: rgba(220, 53, 69, 0.1);
-  color: #dc3545;
-  border: 1px solid #dc3545;
+  background-color: #dc3545 !important;
+  color: white;
 }
 
 .tickets-progress {
@@ -228,21 +243,4 @@
   background-color: white;
   color: #6a2ce8;
   text-decoration: none;
-}
-
-/* Add some animation to make it more eye-catching */
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.availability-badge.warning {
-  animation: pulse 1.5s infinite;
 }

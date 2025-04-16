@@ -8,6 +8,18 @@
   background-size: cover;
   background-position: center;
   position: relative;
+  background-color: #333; /* Fallback color if image fails to load */
+}
+
+/* Add this to ensure images load properly with a fallback */
+.carousel-image::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3); /* Adds a slight darkening effect */
 }
 
 .carousel-overlay {
@@ -34,6 +46,7 @@
 .caption-content {
   max-width: 600px;
   margin-bottom: 2rem;
+  margin-left: 1rem;
 }
 
 .carousel-caption h2 {
@@ -77,6 +90,12 @@
 .carousel-control-prev,
 .carousel-control-next {
   width: 5%;
+  opacity: 0.8;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+  opacity: 1;
 }
 
 /* Responsive adjustments */

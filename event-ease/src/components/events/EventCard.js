@@ -5,19 +5,23 @@ import { formatDate, formatCurrency } from "../../utils/formatters";
 import "./EventCard.css";
 
 const EventCard = ({ event }) => {
+  // Define your placeholder image path
+  const placeholderImage = "/images/event-placeholder.png";
+
+  // Fallback values for missing data
   const {
-    _id,
-    title,
-    imageUrl,
-    category,
-    startDate,
-    startTime,
-    location,
-    ticketPrice,
-    ticketsRemaining,
-    totalTickets,
-    isFeatured,
-  } = event;
+    _id = "",
+    title = "Untitled Event",
+    imageUrl = null,
+    category = "Other",
+    startDate = new Date().toISOString(),
+    startTime = "00:00",
+    location = { venue: "TBD" },
+    ticketPrice = 0,
+    ticketsRemaining = 0,
+    totalTickets = 0,
+    isFeatured = false,
+  } = event || {};
 
   // Calculate percentage of tickets sold
   const percentageSold =
@@ -35,41 +39,38 @@ const EventCard = ({ event }) => {
     availabilityVariant = "warning";
   }
 
-  // Generate a color based on category (for category badge background)
-  const getCategoryColor = (category) => {
-    const categories = {
-      conference: "primary",
-      workshop: "info",
-      concert: "danger",
-      sports: "success",
-      festival: "warning",
-      networking: "secondary",
-      seminar: "dark",
-    };
-
-    return categories[category?.toLowerCase()] || "primary";
-  };
+  // Format date for display
+  const eventDate = new Date(startDate);
+  const day = eventDate.getDate();
+  const month = eventDate
+    .toLocaleString("default", { month: "short" })
+    .toUpperCase();
 
   return (
     <Card className="event-card">
       <div className="event-img-container">
         <Card.Img
           variant="top"
-          src={imageUrl || "https://via.placeholder.com/300x200?text=EventEase"}
+          src={
+            imageUrl && imageUrl.startsWith("http")
+              ? imageUrl
+              : imageUrl
+              ? `http://localhost:5001/${imageUrl.replace(/^\//, "")}`
+              : placeholderImage
+          }
           alt={title}
           className="event-img"
+          onError={(e) => {
+            e.target.onerror = null; // Prevent infinite loop
+            e.target.src = placeholderImage;
+          }}
         />
 
         <div className="event-img-overlay">
-          <div className="event-date">
-            <div className="event-date-day">
-              {new Date(startDate).getDate()}
-            </div>
-            <div className="event-date-month">
-              {new Date(startDate).toLocaleString("default", {
-                month: "short",
-              })}
-            </div>
+          {/* Updated horizontal date display */}
+          <div className="event-date-horizontal">
+            <span className="date-day">{day}</span>
+            <span className="date-month">{month}</span>
           </div>
 
           {isFeatured && (
@@ -82,7 +83,7 @@ const EventCard = ({ event }) => {
 
       <Card.Body className="position-relative">
         <div className="category-badge">
-          <Badge bg={getCategoryColor(category)} pill>
+          <Badge bg="primary" pill>
             {category}
           </Badge>
         </div>
@@ -108,11 +109,7 @@ const EventCard = ({ event }) => {
           </div>
 
           <div className="availability">
-            <Badge
-              bg={availabilityVariant}
-              pill
-              className={`availability-badge ${availabilityVariant}`}
-            >
+            <Badge bg={availabilityVariant} pill className="availability-badge">
               {availabilityStatus}
             </Badge>
           </div>
