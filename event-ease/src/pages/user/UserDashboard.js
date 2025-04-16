@@ -245,6 +245,10 @@ const UserDashboard = () => {
                   <i className="bi bi-ticket-perforated me-2"></i>
                   My Tickets
                 </Button>
+                <Button as={Link} to="/transactions" variant="outline-info">
+                  <i className="bi bi-credit-card me-2"></i>
+                  My Transactions
+                </Button>
                 <Button as={Link} to="/events" variant="outline-success">
                   <i className="bi bi-search me-2"></i>
                   Browse Events
