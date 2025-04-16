@@ -3,7 +3,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import { Spinner } from "react-bootstrap";
 
-const ProtectedRoute = ({ children, allowedRoles = [] }) => {
+const ProtectedRoute = ({ children, allowedRoles = [], denyRoles = [] }) => {
   const { currentUser, loading, isAuthenticated } = useAuth();
   const location = useLocation();
 
@@ -24,6 +24,12 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 
   // If roles are specified, check if user has required role
   if (allowedRoles.length > 0 && !allowedRoles.includes(currentUser.role)) {
+    // Redirect to unauthorized page
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  // If deny roles are specified, check if user has a denied role
+  if (denyRoles.length > 0 && denyRoles.includes(currentUser.role)) {
     // Redirect to unauthorized page
     return <Navigate to="/unauthorized" replace />;
   }

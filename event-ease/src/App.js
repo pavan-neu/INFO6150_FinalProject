@@ -31,6 +31,10 @@ import OrganizerDashboard from "./pages/organizer/OrganizerDashboard";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserManagementPage from "./pages/admin/UserManagementPage";
+import UserDetailPage from "./pages/admin/UserDetailPage";
+import EventManagementPage from "./pages/admin/EventManagementPage";
+
 // Import other admin pages as needed
 import ComponentsDemo from "./pages/public/ComponentsDemo";
 
@@ -74,6 +78,7 @@ function App() {
               <Route path="/faq" element={<FAQPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/components-demo" element={<ComponentsDemo />} />
+
               {/* User Routes */}
               <Route
                 path="/dashboard"
@@ -88,24 +93,6 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ProfilePage />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Organizer Routes */}
-              <Route
-                path="/organizer/dashboard"
-                element={
-                  <ProtectedRoute allowedRoles={["organizer", "admin"]}>
-                    <OrganizerDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Admin Routes */}
-              <Route
-                path="/admin/dashboard"
-                element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <AdminDashboard />
                   </ProtectedRoute>
                 }
               />
@@ -149,10 +136,15 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
+              {/* Organizer Routes - Deny access to admin users */}
               <Route
                 path="/organizer/dashboard"
                 element={
-                  <ProtectedRoute allowedRoles={["organizer", "admin"]}>
+                  <ProtectedRoute
+                    allowedRoles={["organizer"]}
+                    denyRoles={["admin"]}
+                  >
                     <OrganizerDashboard />
                   </ProtectedRoute>
                 }
@@ -160,7 +152,10 @@ function App() {
               <Route
                 path="/organizer/events/create"
                 element={
-                  <ProtectedRoute allowedRoles={["organizer", "admin"]}>
+                  <ProtectedRoute
+                    allowedRoles={["organizer"]}
+                    denyRoles={["admin"]}
+                  >
                     <CreateEventPage />
                   </ProtectedRoute>
                 }
@@ -168,7 +163,10 @@ function App() {
               <Route
                 path="/organizer/events/:eventId/edit"
                 element={
-                  <ProtectedRoute allowedRoles={["organizer", "admin"]}>
+                  <ProtectedRoute
+                    allowedRoles={["organizer"]}
+                    denyRoles={["admin"]}
+                  >
                     <EditEventPage />
                   </ProtectedRoute>
                 }
@@ -176,22 +174,80 @@ function App() {
               <Route
                 path="/organizer/events"
                 element={
-                  <ProtectedRoute allowedRoles={["organizer", "admin"]}>
+                  <ProtectedRoute
+                    allowedRoles={["organizer"]}
+                    denyRoles={["admin"]}
+                  >
                     <OrganizerEventsPage />
                   </ProtectedRoute>
                 }
               />
               <Route
                 path="/organizer/events/:eventId/tickets"
-                element={<EventTicketsPage />}
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["organizer"]}
+                    denyRoles={["admin"]}
+                  >
+                    <EventTicketsPage />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/organizer/tickets/:ticketId"
-                element={<TicketDetailPage />}
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["organizer"]}
+                    denyRoles={["admin"]}
+                  >
+                    <TicketDetailPage />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/organizer/events/:eventId/sales"
-                element={<EventSalesPage />}
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["organizer"]}
+                    denyRoles={["admin"]}
+                  >
+                    <EventSalesPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Admin Routes */}
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <UserManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/users/:userId"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <UserDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/events"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <EventManagementPage />
+                  </ProtectedRoute>
+                }
               />
             </Routes>
           </main>

@@ -448,36 +448,35 @@ const updateUser = async (req, res) => {
       }
     }
 
-    // Update fields if provided
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
-    user.username = req.body.username || user.username;
+    // Create an update object with only the fields we want to update
+    const updateFields = {};
 
-    // Admin can update role if provided
+    // Only include fields that are provided in the request
+    if (req.body.name) updateFields.name = req.body.name;
+    if (req.body.email) updateFields.email = req.body.email;
+    if (req.body.username) updateFields.username = req.body.username;
     if (req.body.role) {
       if (!["user", "organizer", "admin"].includes(req.body.role)) {
         return res.status(400).json({ message: "Invalid role specified" });
       }
-      user.role = req.body.role;
+      updateFields.role = req.body.role;
     }
 
-    // Admin can update active status
-    user.active = req.body.active !== undefined ? req.body.active : user.active;
-
-    // Admin can reset password if needed
-    if (req.body.password) {
-      const passwordRegex =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-      if (!passwordRegex.test(req.body.password)) {
-        return res.status(400).json({
-          message:
-            "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character",
-        });
-      }
-      user.password = req.body.password;
+    // Only include active status if it's explicitly provided
+    if (req.body.active !== undefined) {
+      updateFields.active = req.body.active;
     }
 
-    await user.save();
+    // Use findByIdAndUpdate to avoid triggering password validation
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      updateFields,
+      { new: true, runValidators: false }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     res.json({
       message: "User updated successfully",
