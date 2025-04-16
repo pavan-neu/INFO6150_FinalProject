@@ -13,6 +13,26 @@ export const AuthProvider = ({ children }) => {
   // Configure axios defaults
   axios.defaults.baseURL = "http://localhost:5001/api";
 
+  // Set up axios interceptor to ensure JWT is included in all requests
+  useEffect(() => {
+    const interceptor = axios.interceptors.request.use(
+      (config) => {
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    // Cleanup function to eject the interceptor when the component unmounts
+    return () => {
+      axios.interceptors.request.eject(interceptor);
+    };
+  }, [token]);
+
   // Set token in axios headers if it exists
   useEffect(() => {
     if (token) {
@@ -98,7 +118,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // src/context/AuthContext.js (partial update for logout function)
+  // Logout function
   const logout = (callback) => {
     setLoading(true);
     setTimeout(() => {
@@ -112,6 +132,19 @@ export const AuthProvider = ({ children }) => {
         callback();
       }
     }, 100);
+  };
+
+  const isTokenValid = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return false;
+
+    try {
+      const decoded = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+      return decoded.exp > currentTime;
+    } catch (error) {
+      return false;
+    }
   };
 
   // Update user profile
@@ -140,6 +173,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
+        isTokenValid,
         updateProfile,
         setError,
         isAuthenticated: !!currentUser,
