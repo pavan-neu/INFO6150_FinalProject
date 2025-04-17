@@ -181,16 +181,6 @@ const AdminDashboard = () => {
               <h2>{stats.totalTickets}</h2>
               <h6 className="text-muted">Tickets Sold</h6>
             </Card.Body>
-            <Card.Footer className="bg-transparent border-0 text-center">
-              <Button
-                as={Link}
-                to="/admin/tickets"
-                variant="outline-info"
-                size="sm"
-              >
-                View Tickets
-              </Button>
-            </Card.Footer>
           </Card>
         </Col>
         <Col md={3}>
@@ -203,16 +193,6 @@ const AdminDashboard = () => {
               <h2>${stats.totalRevenue.toFixed(2)}</h2>
               <h6 className="text-muted">Total Revenue</h6>
             </Card.Body>
-            <Card.Footer className="bg-transparent border-0 text-center">
-              <Button
-                as={Link}
-                to="/admin/transactions"
-                variant="outline-warning"
-                size="sm"
-              >
-                View Transactions
-              </Button>
-            </Card.Footer>
           </Card>
         </Col>
       </Row>

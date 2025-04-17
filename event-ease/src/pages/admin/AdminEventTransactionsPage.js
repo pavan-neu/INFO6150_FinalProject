@@ -1,5 +1,6 @@
-// src/pages/admin/AdminTransactionsPage.js
+// src/pages/admin/AdminEventTransactionsPage.js
 import React, { useState, useEffect, useCallback } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Card,
   Table,
@@ -22,16 +23,16 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Link } from "react-router-dom";
 import AdminLayout from "../../components/layout/AdminLayout";
 import Pagination from "../../components/ui/Pagination";
-import {
-  getAllTransactions,
-  cancelTransaction,
-} from "../../services/adminService";
+import { getEventById } from "../../services/eventService";
+import { getEventTransactions } from "../../services/transactionService";
 import { useToast } from "../../context/ToastContext";
 
-const AdminTransactionsPage = () => {
+const AdminEventTransactionsPage = () => {
+  const { eventId } = useParams();
+  const navigate = useNavigate();
+  const [event, setEvent] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -39,10 +40,21 @@ const AdminTransactionsPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
-  const [dateRange, setDateRange] = useState("all"); // all, week, month
   const [totalRevenue, setTotalRevenue] = useState(0);
-  const [revenueData, setRevenueData] = useState([]);
+  const [salesData, setSalesData] = useState([]);
+  const [dateRange, setDateRange] = useState("all");
   const { showToast } = useToast();
+
+  // Fetch event details
+  const fetchEvent = useCallback(async () => {
+    try {
+      const eventData = await getEventById(eventId);
+      setEvent(eventData);
+    } catch (err) {
+      console.error("Error fetching event:", err);
+      setError("Failed to load event details. Please try again.");
+    }
+  }, [eventId]);
 
   // Fetch transactions
   const fetchTransactions = useCallback(async () => {
@@ -50,48 +62,58 @@ const AdminTransactionsPage = () => {
     setError("");
 
     try {
-      const params = {
-        page,
-        limit: 20,
-        status: filterStatus || undefined,
-        search: searchQuery || undefined,
-      };
+      const data = await getEventTransactions(eventId, page, 20);
 
-      const data = await getAllTransactions(params);
+      let filteredTransactions = data.transactions || [];
 
-      // Process the data normally
-      setTransactions(data.transactions || []);
-      setTotalPages(data.pages || 1);
+      // Client-side filtering by status
+      if (filterStatus) {
+        filteredTransactions = filteredTransactions.filter(
+          (transaction) => transaction.status === filterStatus
+        );
+      }
 
-      // Calculate total revenue
-      const totalRev =
-        data.totalRevenue !== undefined
-          ? data.totalRevenue
-          : (data.transactions || []).reduce(
-              (sum, transaction) =>
-                transaction.status === "completed"
-                  ? sum + transaction.amount
-                  : sum,
-              0
-            );
-      setTotalRevenue(totalRev);
+      // Client-side search by transaction ID or customer name
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        filteredTransactions = filteredTransactions.filter(
+          (transaction) =>
+            transaction._id.toLowerCase().includes(query) ||
+            (transaction.user &&
+              transaction.user.name?.toLowerCase().includes(query))
+        );
+      }
 
-      // Process revenue data
-      processRevenueData(data.transactions || []);
+      setTransactions(filteredTransactions);
+      setTotalPages(Math.ceil(filteredTransactions.length / 20) || 1);
+      setTotalRevenue(data.totalRevenue || 0);
+
+      // Process transactions data for charts
+      processTransactionsData(filteredTransactions);
 
       setLoading(false);
     } catch (err) {
       console.error("Error fetching transactions:", err);
-      setError("Failed to load transactions. Please try again.");
+
+      // If it's a 404, don't show it as an error
+      if (err.response?.status === 404) {
+        setTransactions([]);
+        setTotalRevenue(0);
+        setSalesData([]);
+        setError(""); // Clear any error message
+      } else {
+        setError("Failed to load transactions. Please try again.");
+      }
+
       setLoading(false);
     }
-  }, [page, searchQuery, filterStatus]);
+  }, [eventId, page, searchQuery, filterStatus]);
 
-  // Process data for revenue chart
-  const processRevenueData = (transactionsData) => {
+  // Process transactions data for charts
+  const processTransactionsData = (transactionsData) => {
     const groupedByDate = {};
 
-    // Filter by date range
+    // Filter by date range if needed
     const now = new Date();
     const filteredTransactions = transactionsData.filter((transaction) => {
       if (dateRange === "all") return true;
@@ -106,45 +128,40 @@ const AdminTransactionsPage = () => {
       return true;
     });
 
-    // Only include completed transactions in revenue data
-    const completedTransactions = filteredTransactions.filter(
-      (transaction) => transaction.status === "completed"
-    );
-
     // Group by date
-    completedTransactions.forEach((transaction) => {
-      const date = new Date(transaction.createdAt).toLocaleDateString();
+    filteredTransactions.forEach((transaction) => {
+      const date = transaction.createdAt
+        ? new Date(transaction.createdAt).toLocaleDateString()
+        : "Unknown Date";
 
       if (!groupedByDate[date]) {
         groupedByDate[date] = {
           date,
+          sales: 0,
           revenue: 0,
-          count: 0,
         };
       }
 
-      groupedByDate[date].revenue += transaction.amount;
-      groupedByDate[date].count += 1;
+      groupedByDate[date].sales += 1;
+      groupedByDate[date].revenue += transaction.amount || 0;
     });
 
     // Convert to array and sort by date
-    const dataArray = Object.values(groupedByDate);
-    dataArray.sort((a, b) => new Date(a.date) - new Date(b.date));
+    const salesDataArray = Object.values(groupedByDate);
+    salesDataArray.sort((a, b) => {
+      if (a.date === "Unknown Date") return 1;
+      if (b.date === "Unknown Date") return -1;
+      return new Date(a.date) - new Date(b.date);
+    });
 
-    setRevenueData(dataArray);
+    setSalesData(salesDataArray);
   };
 
-  // Load transactions on mount and when dependencies change
+  // Load data on mount
   useEffect(() => {
+    fetchEvent();
     fetchTransactions();
-  }, [fetchTransactions]);
-
-  // Update revenue data when date range changes
-  useEffect(() => {
-    if (transactions.length > 0) {
-      processRevenueData(transactions);
-    }
-  }, [dateRange, transactions]);
+  }, [fetchEvent, fetchTransactions]);
 
   // Handle page change
   const handlePageChange = (newPage) => {
@@ -166,30 +183,13 @@ const AdminTransactionsPage = () => {
   // Handle date range change
   const handleDateRangeChange = (e) => {
     setDateRange(e.target.value);
-  };
-
-  // Handle transaction cancellation
-  const handleCancelTransaction = async (transactionId) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to cancel this transaction? This will also cancel the associated tickets."
-      )
-    ) {
-      return;
-    }
-
-    try {
-      await cancelTransaction(transactionId);
-      showToast("Transaction cancelled successfully", "success");
-      fetchTransactions(); // Refresh the transactions list
-    } catch (err) {
-      console.error("Error cancelling transaction:", err);
-      showToast("Failed to cancel transaction", "danger");
-    }
+    // Re-process transaction data with the new date range
+    processTransactionsData(transactions);
   };
 
   // Format date
   const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString(undefined, {
       year: "numeric",
       month: "short",
@@ -199,6 +199,7 @@ const AdminTransactionsPage = () => {
 
   // Format time
   const formatTime = (dateString) => {
+    if (!dateString) return "";
     return new Date(dateString).toLocaleTimeString(undefined, {
       hour: "2-digit",
       minute: "2-digit",
@@ -215,19 +216,60 @@ const AdminTransactionsPage = () => {
       case "cancelled":
         return <Badge bg="danger">Cancelled</Badge>;
       default:
-        return <Badge bg="secondary">{status}</Badge>;
+        return <Badge bg="secondary">{status || "Unknown"}</Badge>;
     }
   };
 
+  if (!event && !loading && !error) {
+    return (
+      <AdminLayout>
+        <Alert variant="warning">
+          Event not found or you don't have permission to view it.
+        </Alert>
+        <Button variant="primary" onClick={() => navigate("/admin/events")}>
+          Return to Events
+        </Button>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">Transaction Management</h2>
+      {/* Header with breadcrumb navigation */}
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+        <div>
+          <nav aria-label="breadcrumb">
+            <ol className="breadcrumb mb-1">
+              <li className="breadcrumb-item">
+                <Link to="/admin/dashboard">Dashboard</Link>
+              </li>
+              <li className="breadcrumb-item">
+                <Link to="/admin/events">Events</Link>
+              </li>
+              <li className="breadcrumb-item">
+                <Link to={`/admin/events/${eventId}`}>
+                  {event ? event.title : "Loading..."}
+                </Link>
+              </li>
+              <li className="breadcrumb-item active">Transactions</li>
+            </ol>
+          </nav>
+          <h2 className="mb-0">Event Transactions</h2>
+        </div>
+        <div className="mt-3 mt-md-0">
+          <Button
+            as={Link}
+            to={`/admin/events/${eventId}`}
+            variant="outline-primary"
+          >
+            <i className="bi bi-arrow-left me-2"></i> Back to Event
+          </Button>
+        </div>
       </div>
 
       {error && <Alert variant="danger">{error}</Alert>}
 
-      {/* Revenue Overview */}
+      {/* Revenue statistics */}
       <Card className="mb-4">
         <Card.Header className="d-flex justify-content-between align-items-center">
           <h5 className="mb-0">Revenue Overview</h5>
@@ -255,28 +297,18 @@ const AdminTransactionsPage = () => {
             <Col md={4}>
               <Card className="h-100 border-0">
                 <Card.Body className="text-center">
-                  <h6 className="text-muted mb-2">Total Transactions</h6>
-                  <h2>
-                    {
-                      transactions.filter((t) => t.status === "completed")
-                        .length
-                    }
-                  </h2>
+                  <h6 className="text-muted mb-2">Transactions</h6>
+                  <h2>{transactions.length}</h2>
                 </Card.Body>
               </Card>
             </Col>
             <Col md={4}>
               <Card className="h-100 border-0">
                 <Card.Body className="text-center">
-                  <h6 className="text-muted mb-2">Average Transaction</h6>
+                  <h6 className="text-muted mb-2">Average Value</h6>
                   <h2>
-                    {transactions.filter((t) => t.status === "completed")
-                      .length > 0
-                      ? `$${(
-                          totalRevenue /
-                          transactions.filter((t) => t.status === "completed")
-                            .length
-                        ).toFixed(2)}`
+                    {transactions.length > 0
+                      ? `$${(totalRevenue / transactions.length).toFixed(2)}`
                       : "$0.00"}
                   </h2>
                 </Card.Body>
@@ -286,9 +318,9 @@ const AdminTransactionsPage = () => {
 
           {/* Revenue Chart */}
           <div style={{ height: "300px" }}>
-            {revenueData.length > 0 ? (
+            {salesData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={revenueData}>
+                <LineChart data={salesData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
@@ -307,7 +339,7 @@ const AdminTransactionsPage = () => {
               </ResponsiveContainer>
             ) : (
               <div className="text-center py-5 text-muted">
-                <p>No revenue data available for the selected period</p>
+                <p>No transaction data available for the selected period</p>
               </div>
             )}
           </div>
@@ -316,35 +348,33 @@ const AdminTransactionsPage = () => {
 
       {/* Transactions List */}
       <Card className="shadow-sm mb-4">
-        <Card.Header>
-          <div className="d-flex justify-content-between align-items-center">
-            <h5 className="mb-0">Transactions</h5>
+        <Card.Header className="d-flex justify-content-between align-items-center">
+          <h5 className="mb-0">Transactions</h5>
 
-            <div className="d-flex">
-              <InputGroup style={{ width: "250px" }}>
-                <InputGroup.Text>
-                  <i className="bi bi-search"></i>
-                </InputGroup.Text>
-                <Form.Control
-                  type="text"
-                  placeholder="Search transactions..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                />
-              </InputGroup>
+          <div className="d-flex">
+            <InputGroup style={{ width: "250px" }}>
+              <InputGroup.Text>
+                <i className="bi bi-search"></i>
+              </InputGroup.Text>
+              <Form.Control
+                type="text"
+                placeholder="Search transactions..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+              />
+            </InputGroup>
 
-              <Form.Select
-                value={filterStatus}
-                onChange={handleStatusFilterChange}
-                className="ms-2"
-                style={{ width: "150px" }}
-              >
-                <option value="">All Statuses</option>
-                <option value="completed">Completed</option>
-                <option value="pending">Pending</option>
-                <option value="cancelled">Cancelled</option>
-              </Form.Select>
-            </div>
+            <Form.Select
+              value={filterStatus}
+              onChange={handleStatusFilterChange}
+              className="ms-2"
+              style={{ width: "150px" }}
+            >
+              <option value="">All Statuses</option>
+              <option value="completed">Completed</option>
+              <option value="pending">Pending</option>
+              <option value="cancelled">Cancelled</option>
+            </Form.Select>
           </div>
         </Card.Header>
         <Card.Body>
@@ -363,7 +393,7 @@ const AdminTransactionsPage = () => {
               <p className="text-muted mb-3">
                 {searchQuery || filterStatus
                   ? "No transactions match your search or filter criteria."
-                  : "No transactions have been made yet."}
+                  : "No transactions have been made for this event yet."}
               </p>
             </div>
           ) : (
@@ -374,7 +404,6 @@ const AdminTransactionsPage = () => {
                     <th>Transaction ID</th>
                     <th>Date & Time</th>
                     <th>Customer</th>
-                    <th>Event</th>
                     <th>Amount</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -383,14 +412,7 @@ const AdminTransactionsPage = () => {
                 <tbody>
                   {transactions.map((transaction) => (
                     <tr key={transaction._id}>
-                      <td>
-                        <Link
-                          to={`/admin/transactions/${transaction._id}`}
-                          className="text-decoration-none"
-                        >
-                          {transaction._id.slice(-8).toUpperCase()}
-                        </Link>
-                      </td>
+                      <td>{transaction._id.slice(-8).toUpperCase()}</td>
                       <td>
                         {formatDate(transaction.createdAt)}
                         <small className="d-block text-muted">
@@ -409,42 +431,17 @@ const AdminTransactionsPage = () => {
                           "Unknown"
                         )}
                       </td>
-                      <td>
-                        {transaction.event ? (
-                          <Link
-                            to={`/admin/events/${transaction.event._id}`}
-                            className="text-decoration-none"
-                          >
-                            {transaction.event.title}
-                          </Link>
-                        ) : (
-                          "Unknown Event"
-                        )}
-                      </td>
-                      <td>${transaction.amount.toFixed(2)}</td>
+                      <td>${(transaction.amount || 0).toFixed(2)}</td>
                       <td>{getStatusBadge(transaction.status)}</td>
                       <td>
-                        <div className="btn-group">
-                          <Button
-                            as={Link}
-                            to={`/admin/transactions/${transaction._id}`}
-                            variant="outline-primary"
-                            size="sm"
-                          >
-                            Details
-                          </Button>
-                          {transaction.status !== "cancelled" && (
-                            <Button
-                              variant="outline-danger"
-                              size="sm"
-                              onClick={() =>
-                                handleCancelTransaction(transaction._id)
-                              }
-                            >
-                              Cancel
-                            </Button>
-                          )}
-                        </div>
+                        <Button
+                          as={Link}
+                          to={`/admin/events/${eventId}`}
+                          variant="outline-primary"
+                          size="sm"
+                        >
+                          View Event
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -468,4 +465,4 @@ const AdminTransactionsPage = () => {
   );
 };
 
-export default AdminTransactionsPage;
+export default AdminEventTransactionsPage;

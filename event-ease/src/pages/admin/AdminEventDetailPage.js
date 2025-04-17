@@ -24,14 +24,14 @@ const AdminEventDetailPage = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  
+
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showFeatureModal, setShowFeatureModal] = useState(false);
   const [featureNote, setFeatureNote] = useState("");
-  
+
   // Fetch event data
   useEffect(() => {
     const fetchEvent = async () => {
@@ -54,17 +54,23 @@ const AdminEventDetailPage = () => {
   const handleFeatureEvent = async () => {
     try {
       await featureEvent(eventId, !event.isFeatured, featureNote);
-      showToast(`Event ${event.isFeatured ? "unfeatured" : "featured"} successfully`, "success");
-      
+      showToast(
+        `Event ${event.isFeatured ? "unfeatured" : "featured"} successfully`,
+        "success"
+      );
+
       // Refresh event data
       const updatedEvent = await getEventById(eventId);
       setEvent(updatedEvent);
-      
+
       setShowFeatureModal(false);
       setFeatureNote("");
     } catch (err) {
       console.error("Error featuring event:", err);
-      showToast(`Failed to ${event.isFeatured ? "unfeature" : "feature"} event`, "danger");
+      showToast(
+        `Failed to ${event.isFeatured ? "unfeature" : "feature"} event`,
+        "danger"
+      );
     }
   };
 
@@ -73,11 +79,11 @@ const AdminEventDetailPage = () => {
     try {
       await cancelEvent(eventId);
       showToast("Event cancelled successfully", "success");
-      
+
       // Refresh event data
       const updatedEvent = await getEventById(eventId);
       setEvent(updatedEvent);
-      
+
       setShowCancelModal(false);
     } catch (err) {
       console.error("Error cancelling event:", err);
@@ -126,10 +132,7 @@ const AdminEventDetailPage = () => {
     return (
       <AdminLayout>
         <Alert variant="danger">{error}</Alert>
-        <Button
-          variant="primary"
-          onClick={() => navigate(-1)}
-        >
+        <Button variant="primary" onClick={() => navigate(-1)}>
           Go Back
         </Button>
       </AdminLayout>
@@ -142,15 +145,19 @@ const AdminEventDetailPage = () => {
         <Alert variant="warning">
           Event not found or you don't have permission to view it.
         </Alert>
-        <Button
-          variant="primary"
-          onClick={() => navigate("/admin/events")}
-        >
+        <Button variant="primary" onClick={() => navigate("/admin/events")}>
           Return to Events
         </Button>
       </AdminLayout>
     );
   }
+
+  // Construct the full image URL
+  const imageUrl = event.imageUrl
+    ? event.imageUrl.startsWith("http")
+      ? event.imageUrl
+      : `http://localhost:5001/${event.imageUrl}` // Adjust the base URL as needed
+    : "/images/event-placeholder.png";
 
   return (
     <AdminLayout>
@@ -194,20 +201,28 @@ const AdminEventDetailPage = () => {
           <Card className="mb-4">
             <Card.Img
               variant="top"
-              src={event.imageUrl}
+              src={imageUrl}
               alt={event.title}
               style={{ height: "200px", objectFit: "cover" }}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/images/event-placeholder.png";
+              }}
             />
             <Card.Body>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h4 className="mb-0">{event.title}</h4>
                 {event.isFeatured && (
-                  <Badge bg="warning" text="dark">Featured</Badge>
+                  <Badge bg="warning" text="dark">
+                    Featured
+                  </Badge>
                 )}
               </div>
               <p className="mb-0">
                 {getStatusBadge(event.status)}
-                <Badge bg="secondary" className="ms-2">{event.category}</Badge>
+                <Badge bg="secondary" className="ms-2">
+                  {event.category}
+                </Badge>
               </p>
             </Card.Body>
           </Card>
@@ -219,33 +234,46 @@ const AdminEventDetailPage = () => {
             <ListGroup variant="flush">
               <ListGroup.Item>
                 <Row>
-                  <Col md={4} className="text-muted">Start Date</Col>
+                  <Col md={4} className="text-muted">
+                    Start Date
+                  </Col>
                   <Col md={8}>{formatDate(event.startDate)}</Col>
                 </Row>
               </ListGroup.Item>
               <ListGroup.Item>
                 <Row>
-                  <Col md={4} className="text-muted">End Date</Col>
+                  <Col md={4} className="text-muted">
+                    End Date
+                  </Col>
                   <Col md={8}>{formatDate(event.endDate)}</Col>
                 </Row>
               </ListGroup.Item>
               <ListGroup.Item>
                 <Row>
-                  <Col md={4} className="text-muted">Time</Col>
-                  <Col md={8}>{formatTime(event.startTime)} - {formatTime(event.endTime)}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col md={4} className="text-muted">Location</Col>
+                  <Col md={4} className="text-muted">
+                    Time
+                  </Col>
                   <Col md={8}>
-                    {event.location.venue}, {event.location.city}, {event.location.state}
+                    {formatTime(event.startTime)} - {formatTime(event.endTime)}
                   </Col>
                 </Row>
               </ListGroup.Item>
               <ListGroup.Item>
                 <Row>
-                  <Col md={4} className="text-muted">Organizer</Col>
+                  <Col md={4} className="text-muted">
+                    Location
+                  </Col>
+                  <Col md={8}>
+                    {event.location.venue}, {event.location.city},{" "}
+                    {event.location.state}
+                  </Col>
+                </Row>
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <Row>
+                  <Col md={4} className="text-muted">
+                    Organizer
+                  </Col>
                   <Col md={8}>
                     <Link to={`/admin/users/${event.organizer._id}`}>
                       {event.organizer.name}
@@ -255,16 +283,23 @@ const AdminEventDetailPage = () => {
               </ListGroup.Item>
               <ListGroup.Item>
                 <Row>
-                  <Col md={4} className="text-muted">Tickets</Col>
+                  <Col md={4} className="text-muted">
+                    Tickets
+                  </Col>
                   <Col md={8}>
                     <div>
-                      Sold: {event.totalTickets - event.ticketsRemaining}/{event.totalTickets}
+                      Sold: {event.totalTickets - event.ticketsRemaining}/
+                      {event.totalTickets}
                     </div>
                     <div className="progress mt-1" style={{ height: "6px" }}>
                       <div
                         className="progress-bar bg-primary"
                         style={{
-                          width: `${((event.totalTickets - event.ticketsRemaining) / event.totalTickets) * 100}%`,
+                          width: `${
+                            ((event.totalTickets - event.ticketsRemaining) /
+                              event.totalTickets) *
+                            100
+                          }%`,
                         }}
                       ></div>
                     </div>
@@ -273,13 +308,17 @@ const AdminEventDetailPage = () => {
               </ListGroup.Item>
               <ListGroup.Item>
                 <Row>
-                  <Col md={4} className="text-muted">Price</Col>
+                  <Col md={4} className="text-muted">
+                    Price
+                  </Col>
                   <Col md={8}>${event.ticketPrice.toFixed(2)}</Col>
                 </Row>
               </ListGroup.Item>
               <ListGroup.Item>
                 <Row>
-                  <Col md={4} className="text-muted">Created</Col>
+                  <Col md={4} className="text-muted">
+                    Created
+                  </Col>
                   <Col md={8}>{formatDate(event.createdAt)}</Col>
                 </Row>
               </ListGroup.Item>
@@ -309,39 +348,51 @@ const AdminEventDetailPage = () => {
                     <div className="mb-4">
                       <h5>Description</h5>
                       <div className="p-3 bg-light rounded">
-                        {event.description.split('\n').map((paragraph, index) => (
-                          <p key={index}>{paragraph}</p>
-                        ))}
+                        {event.description ? (
+                          event.description
+                            .split("\n")
+                            .map((paragraph, index) => (
+                              <p key={index}>{paragraph}</p>
+                            ))
+                        ) : (
+                          <p className="text-muted">No description provided.</p>
+                        )}
                       </div>
                     </div>
-                    
+
                     {event.tags && event.tags.length > 0 && (
                       <div className="mb-4">
                         <h5>Tags</h5>
                         <div>
                           {event.tags.map((tag, index) => (
-                            <Badge key={index} bg="secondary" className="me-1 mb-1">{tag}</Badge>
+                            <Badge
+                              key={index}
+                              bg="secondary"
+                              className="me-1 mb-1"
+                            >
+                              {tag}
+                            </Badge>
                           ))}
                         </div>
                       </div>
                     )}
-                    
+
                     <div>
                       <h5>Address</h5>
-                      <p className="mb-1">
-                        {event.location.venue}
-                      </p>
-                      <p className="mb-1">
-                        {event.location.address}
-                      </p>
+                      <p className="mb-1">{event.location.venue}</p>
+                      <p className="mb-1">{event.location.address}</p>
                       <p className="mb-0">
-                        {event.location.city}, {event.location.state} {event.location.zipCode}
+                        {event.location.city}, {event.location.state}{" "}
+                        {event.location.zipCode}
                       </p>
                     </div>
                   </Tab.Pane>
                   <Tab.Pane eventKey="tickets">
                     <div className="text-center py-4">
-                      <Button 
+                      <p className="mb-3">
+                        View and manage all tickets for this event.
+                      </p>
+                      <Button
                         as={Link}
                         to={`/admin/events/${event._id}/tickets`}
                         variant="primary"
@@ -352,7 +403,10 @@ const AdminEventDetailPage = () => {
                   </Tab.Pane>
                   <Tab.Pane eventKey="transactions">
                     <div className="text-center py-4">
-                      <Button 
+                      <p className="mb-3">
+                        View all financial transactions for this event.
+                      </p>
+                      <Button
                         as={Link}
                         to={`/admin/events/${event._id}/transactions`}
                         variant="primary"
@@ -374,12 +428,10 @@ const AdminEventDetailPage = () => {
           <Modal.Title>Confirm Cancellation</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p className="mb-3">
-            Are you sure you want to cancel this event?
-          </p>
+          <p className="mb-3">Are you sure you want to cancel this event?</p>
           <div className="alert alert-warning">
-            <strong>Note:</strong> This will cancel all pending tickets and notify all attendees.
-            This action cannot be undone.
+            <strong>Note:</strong> This will cancel all pending tickets and
+            notify all attendees. This action cannot be undone.
           </div>
           <div className="mb-3">
             <strong>Event:</strong> {event.title}
@@ -417,7 +469,8 @@ const AdminEventDetailPage = () => {
           ) : (
             <>
               <p>
-                Featuring this event will showcase it on the homepage in the featured events section.
+                Featuring this event will showcase it on the homepage in the
+                featured events section.
               </p>
               <Form.Group className="mb-3">
                 <Form.Label>Feature Note (Optional)</Form.Label>
@@ -433,10 +486,13 @@ const AdminEventDetailPage = () => {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowFeatureModal(false)}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowFeatureModal(false)}
+          >
             Cancel
           </Button>
-          <Button 
+          <Button
             variant={event.isFeatured ? "warning" : "success"}
             onClick={handleFeatureEvent}
           >

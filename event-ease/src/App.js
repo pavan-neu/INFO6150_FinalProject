@@ -4,8 +4,8 @@ import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import GlobalToast from "./components/ui/GlobalToast";
 // Add these imports for Stripe integration
-import { Elements } from '@stripe/react-stripe-js';
-import stripePromise from './utils/stripeConfig';
+import { Elements } from "@stripe/react-stripe-js";
+import stripePromise from "./utils/stripeConfig";
 
 // Layout Components
 import Navbar from "./components/layout/Navbar";
@@ -40,8 +40,6 @@ import EventManagementPage from "./pages/admin/EventManagementPage";
 // Import new components at the top of your App.js file
 import AdminEventDetailPage from "./pages/admin/AdminEventDetailPage";
 import AdminFeaturedEventsPage from "./pages/admin/AdminFeaturedEventsPage";
-import AdminTicketsPage from "./pages/admin/AdminTicketsPage";
-import AdminTransactionsPage from "./pages/admin/AdminTransactionsPage";
 
 // Import other admin pages as needed
 import ComponentsDemo from "./pages/public/ComponentsDemo";
@@ -68,6 +66,9 @@ import EventSalesPage from "./pages/organizer/EventSalesPage";
 
 // Import the new CheckoutPage component
 import CheckoutPage from "./pages/user/CheckoutPage";
+
+import AdminEventTicketsPage from "./pages/admin/AdminEventTicketsPage.js";
+import AdminEventTransactionsPage from "./pages/admin/AdminEventTransactionsPage";
 
 function App() {
   return (
@@ -288,18 +289,18 @@ function App() {
                   }
                 />
                 <Route
-                  path="/admin/tickets"
+                  path="/admin/events/:eventId/tickets"
                   element={
                     <ProtectedRoute allowedRoles={["admin"]}>
-                      <AdminTicketsPage />
+                      <AdminEventTicketsPage />
                     </ProtectedRoute>
                   }
                 />
                 <Route
-                  path="/admin/transactions"
+                  path="/admin/events/:eventId/transactions"
                   element={
                     <ProtectedRoute allowedRoles={["admin"]}>
-                      <AdminTransactionsPage />
+                      <AdminEventTransactionsPage />
                     </ProtectedRoute>
                   }
                 />

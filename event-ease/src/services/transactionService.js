@@ -1,12 +1,12 @@
 // src/services/transactionService.js
 import axios from "axios";
 
-// Get user transactions with pagination
-export const getUserTransactions = async (page = 1, limit = 10) => {
+// Get transactions for a specific user (admin only)
+export const getUserTransactions = async (userId, page = 1, limit = 10) => {
   try {
-    const response = await axios.get(
-      `/transactions/my-transactions?page=${page}&limit=${limit}`
-    );
+    const response = await axios.get(`/users/${userId}/transactions`, {
+      params: { page, limit },
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching user transactions:", error);

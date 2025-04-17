@@ -6,7 +6,7 @@ export const bookTickets = async (eventId, quantity) => {
   try {
     const response = await axios.post("/tickets", {
       eventId,
-      quantity
+      quantity,
     });
     return response.data;
   } catch (error) {
@@ -15,12 +15,12 @@ export const bookTickets = async (eventId, quantity) => {
   }
 };
 
-// Get user tickets with pagination
-export const getUserTickets = async (page = 1, limit = 10) => {
+// Get tickets for a specific user (admin only)
+export const getUserTickets = async (userId, page = 1, limit = 10) => {
   try {
-    const response = await axios.get(
-      `/tickets/my-tickets?page=${page}&limit=${limit}`
-    );
+    const response = await axios.get(`/users/${userId}/tickets`, {
+      params: { page, limit },
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching user tickets:", error);

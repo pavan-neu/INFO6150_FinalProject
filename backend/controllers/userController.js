@@ -547,6 +547,121 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// @desc    Get tickets for a specific user (admin only)
+// @route   GET /api/users/:id/tickets
+// @access  Private/Admin
+const getUserTickets = async (req, res) => {
+  try {
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Verify user exists
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get tickets for the specified user
+    const tickets = await Ticket.find({ user: req.params.id })
+      .populate({
+        path: "event",
+        select: "title startDate startTime location imageUrl",
+      })
+      .sort({ purchaseDate: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Get total count for pagination
+    const count = await Ticket.countDocuments({ user: req.params.id });
+
+    // Get counts by status
+    const statusCounts = await Ticket.aggregate([
+      { $match: { user: new mongoose.Types.ObjectId(req.params.id) } },
+      { $group: { _id: "$status", count: { $sum: 1 } } },
+    ]);
+
+    // Format status counts
+    const countsByStatus = {};
+    statusCounts.forEach((item) => {
+      countsByStatus[item._id] = item.count;
+    });
+
+    res.json({
+      tickets,
+      page,
+      pages: Math.ceil(count / limit),
+      total: count,
+      countsByStatus,
+    });
+  } catch (error) {
+    console.error("Get user tickets error:", error.message);
+    res.status(500).json({ message: "Server error retrieving user tickets" });
+  }
+};
+
+// @desc    Get transactions for a specific user (admin only)
+// @route   GET /api/users/:id/transactions
+// @access  Private/Admin
+const getUserTransactions = async (req, res) => {
+  try {
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Verify user exists
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get transactions for the specified user
+    const transactions = await Transaction.find({ user: req.params.id })
+      .populate({
+        path: "event",
+        select: "title startDate",
+      })
+      .populate({
+        path: "ticket",
+        select: "ticketNumber status",
+      })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Get total count for pagination
+    const count = await Transaction.countDocuments({ user: req.params.id });
+
+    // Get total amount spent by the user - only for completed transactions
+    const amountData = await Transaction.aggregate([
+      {
+        $match: {
+          user: new mongoose.Types.ObjectId(req.params.id),
+          status: "completed",
+        },
+      },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+
+    const totalAmount = amountData.length > 0 ? amountData[0].total : 0;
+
+    res.json({
+      transactions,
+      page,
+      pages: Math.ceil(count / limit),
+      total: count,
+      totalAmount,
+    });
+  } catch (error) {
+    console.error("Get user transactions error:", error.message);
+    res
+      .status(500)
+      .json({ message: "Server error retrieving user transactions" });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -560,4 +675,6 @@ module.exports = {
   getUserById,
   updateUser,
   deleteUser,
+  getUserTickets, // new
+  getUserTransactions, // new
 };
