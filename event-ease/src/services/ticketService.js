@@ -1,6 +1,20 @@
 // src/services/ticketService.js
 import axios from "axios";
 
+// Book tickets
+export const bookTickets = async (eventId, quantity) => {
+  try {
+    const response = await axios.post("/tickets", {
+      eventId,
+      quantity
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error booking tickets:", error);
+    throw error.response?.data?.message || "Error booking tickets";
+  }
+};
+
 // Get user tickets with pagination
 export const getUserTickets = async (page = 1, limit = 10) => {
   try {

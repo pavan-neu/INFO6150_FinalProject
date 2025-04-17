@@ -1,0 +1,104 @@
+/* src/pages/user/CheckoutPage.css */
+.checkout-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .reservation-timer {
+    margin-bottom: 20px;
+  }
+  
+  .checkout-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .order-summary {
+    flex: 1;
+    min-width: 300px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+  }
+  
+  .event-summary {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 20px;
+  }
+  
+  .event-image-small {
+    width: 100px;
+    height: 100px;
+    margin-right: 15px;
+  }
+  
+  .event-image-small img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  
+  .event-summary-details h4 {
+    margin-bottom: 10px;
+  }
+  
+  .event-summary-details p {
+    margin-bottom: 5px;
+    color: #6c757d;
+  }
+  
+  .ticket-summary {
+    margin-top: 20px;
+  }
+  
+  .ticket-summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  
+  .ticket-summary-item.total {
+    border-top: 1px solid #dee2e6;
+    padding-top: 10px;
+    font-weight: bold;
+    font-size: 18px;
+  }
+  
+  .payment-section {
+    flex: 1;
+    min-width: 300px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+  }
+  
+  .payment-placeholder {
+    background-color: #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .card-element-container {
+    border-radius: 4px;
+    padding: 12px;
+    background-color: #f8f9fa;
+  }
+  
+  .reservation-timer {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  .event-image-small img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+  }

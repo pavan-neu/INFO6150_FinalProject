@@ -1,7 +1,7 @@
 // routes/ticketRoutes.js
 const express = require("express");
 const {
-  bookTicket,
+  bookTickets,
   getMyTickets,
   getTicketById,
   getTicketByNumber,
@@ -15,7 +15,7 @@ const { protect, admin, organizer } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 // Protected routes
-router.post("/", protect, bookTicket);
+router.post("/", protect, bookTickets);
 router.get("/my-tickets", protect, getMyTickets);
 router.get("/event/:eventId", protect, getTicketsForEvent);
 router.get("/:id", protect, getTicketById);
