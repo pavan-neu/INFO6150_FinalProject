@@ -1,0 +1,15 @@
+/* src/pages/public/EventDetailPage.css */
+.ticket-selector {
+    border-top: 1px solid #dee2e6;
+    padding-top: 1rem;
+  }
+  
+  .quantity-selector {
+    margin: 15px 0;
+  }
+  
+  .total-price {
+    border-top: 1px solid #dee2e6;
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+  }

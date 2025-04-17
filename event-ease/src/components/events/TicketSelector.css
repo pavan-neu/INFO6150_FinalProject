@@ -1,0 +1,50 @@
+/* src/components/events/TicketSelector.css */
+.ticket-selector {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .tickets-available {
+    margin-bottom: 10px;
+    color: #6c757d;
+  }
+  
+  .ticket-price {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+  
+  .quantity-selector {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .quantity-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    border: 1px solid #dee2e6;
+    background-color: white;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .quantity-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .quantity {
+    padding: 0 20px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .total-price {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 10px;
+  }

@@ -40,7 +40,6 @@ import AdminFeaturedEventsPage from "./pages/admin/AdminFeaturedEventsPage";
 import AdminTicketsPage from "./pages/admin/AdminTicketsPage";
 import AdminTransactionsPage from "./pages/admin/AdminTransactionsPage";
 
-
 // Import other admin pages as needed
 import ComponentsDemo from "./pages/public/ComponentsDemo";
 
@@ -63,6 +62,9 @@ import EditEventPage from "./pages/organizer/EditEventPage";
 import OrganizerEventsPage from "./pages/organizer/OrganizerEventsPage";
 import EventTicketsPage from "./pages/organizer/EventTicketsPage";
 import EventSalesPage from "./pages/organizer/EventSalesPage";
+
+// Import the new CheckoutPage component
+import CheckoutPage from "./pages/user/CheckoutPage";
 
 function App() {
   return (
@@ -139,6 +141,15 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <TransactionDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Add the new checkout route here */}
+              <Route
+                path="/checkout"
+                element={
+                  <ProtectedRoute>
+                    <CheckoutPage />
                   </ProtectedRoute>
                 }
               />

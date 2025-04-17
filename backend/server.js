@@ -58,6 +58,12 @@ app.get("/", (req, res) => {
   res.send("EventEase API is running...");
 });
 
+// Initialize cron jobs in production and development, but not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  console.log("Initializing ticket reservation expiration system...");
+  require('./crons/ticketReservations');
+}
+
 // Custom error handler
 app.use((err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;

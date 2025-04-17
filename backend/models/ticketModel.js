@@ -30,6 +30,13 @@ const ticketSchema = mongoose.Schema(
       enum: ["reserved", "paid", "cancelled", "used"],
       default: "reserved",
     },
+    // Add reservation expiry field
+    reservationExpiry: {
+      type: Date,
+      required: function() {
+        return this.status === "reserved";
+      }
+    },
     qrCode: {
       type: String,
     },

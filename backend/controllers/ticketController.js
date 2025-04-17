@@ -4,10 +4,10 @@ const Ticket = require("../models/ticketModel");
 const Event = require("../models/eventModel");
 const User = require("../models/userModel");
 
-// @desc    Book a ticket
+// @desc    Book tickets with reservation
 // @route   POST /api/tickets
 // @access  Private
-const bookTicket = async (req, res) => {
+const bookTickets = async (req, res) => {
   try {
     const { eventId, quantity } = req.body;
 
@@ -32,6 +32,11 @@ const bookTicket = async (req, res) => {
       return res.status(400).json({ message: "Event is not active" });
     }
 
+    // Check if event has ended
+    if (new Date(event.endDate) < new Date()) {
+      return res.status(400).json({ message: "This event has already ended" });
+    }
+
     // Check if there are enough tickets available
     if (event.ticketsRemaining < qty) {
       return res
@@ -41,6 +46,9 @@ const bookTicket = async (req, res) => {
 
     // Calculate total price
     const totalPrice = event.ticketPrice * qty;
+
+    // Set reservation expiry to 10 minutes from now
+    const reservationExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
     // Create tickets one by one with explicit ticket number generation
     const tickets = [];
@@ -58,6 +66,7 @@ const bookTicket = async (req, res) => {
         user: req.user._id,
         price: event.ticketPrice,
         status: "reserved",
+        reservationExpiry: reservationExpiry,
       });
 
       await ticket.save();
@@ -76,6 +85,49 @@ const bookTicket = async (req, res) => {
   } catch (error) {
     console.error("Book ticket error:", error.message);
     res.status(500).json({ message: "Server error booking ticket" });
+  }
+};
+
+// @desc    Process expired ticket reservations
+// @route   Not exposed via API - called by a cron job
+// @access  Private
+const processExpiredReservations = async () => {
+  try {
+    console.log('Checking for expired ticket reservations...');
+    
+    // Find all expired reservations
+    const expiredTickets = await Ticket.find({
+      status: 'reserved',
+      reservationExpiry: { $lt: new Date() }
+    });
+    
+    console.log(`Found ${expiredTickets.length} expired ticket reservations`);
+    
+    // Process each expired ticket
+    for (const ticket of expiredTickets) {
+      // Update ticket status
+      ticket.status = 'cancelled';
+      await ticket.save();
+      
+      // Update event ticket count
+      await Event.findByIdAndUpdate(ticket.event, {
+        $inc: { ticketsRemaining: 1 }
+      });
+      
+      console.log(`Released ticket ${ticket.ticketNumber}`);
+    }
+    
+    return {
+      processedCount: expiredTickets.length,
+      success: true
+    };
+  } catch (error) {
+    console.error('Error processing expired tickets:', error);
+    return {
+      processedCount: 0,
+      success: false,
+      error: error.message
+    };
   }
 };
 
@@ -388,7 +440,8 @@ const getTicketsForEvent = async (req, res) => {
 };
 
 module.exports = {
-  bookTicket,
+  bookTickets, // Renamed from bookTicket to bookTickets
+  processExpiredReservations, // New function for cron job
   getMyTickets,
   getTicketById,
   getTicketByNumber,
