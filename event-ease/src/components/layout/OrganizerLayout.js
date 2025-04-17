@@ -78,24 +78,6 @@ const OrganizerLayout = ({ children }) => {
                 >
                   <i className="bi bi-plus-circle me-2"></i> Create Event
                 </Nav.Link>
-                <Nav.Link
-                  as={Link}
-                  to="/organizer/sales"
-                  className={`rounded-0 ${
-                    isActive("/organizer/sales") ? "active bg-light" : ""
-                  }`}
-                >
-                  <i className="bi bi-graph-up me-2"></i> Sales Reports
-                </Nav.Link>
-                <Nav.Link
-                  as={Link}
-                  to="/organizer/settings"
-                  className={`rounded-0 ${
-                    isActive("/organizer/settings") ? "active bg-light" : ""
-                  }`}
-                >
-                  <i className="bi bi-gear me-2"></i> Settings
-                </Nav.Link>
               </Nav>
             </div>
           </div>

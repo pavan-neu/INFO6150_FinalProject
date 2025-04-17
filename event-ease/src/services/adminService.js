@@ -80,13 +80,17 @@ export const deleteUser = async (userId) => {
 };
 
 // Feature or unfeature event (admin only)
-export const featureEvent = async (eventId, isFeatured = true, featureNote = "") => {
+export const featureEvent = async (
+  eventId,
+  isFeatured = true,
+  featureNote = ""
+) => {
   try {
     // Ensure auth headers are set
     ensureAuthHeaders();
     const response = await axios.put(`/events/${eventId}/feature`, {
       isFeatured,
-      featureNote
+      featureNote,
     });
     return response.data;
   } catch (error) {
@@ -103,20 +107,7 @@ export const getAllTickets = async (params = {}) => {
     const response = await axios.get("/tickets", { params });
     return response.data;
   } catch (error) {
-    // If it's a 404, interpret as "no tickets yet" 
-    if (error.response?.status === 404) {
-      return {
-        tickets: [],
-        pages: 0,
-        total: 0,
-        countsByStatus: {
-          reserved: 0,
-          paid: 0,
-          used: 0,
-          cancelled: 0
-        }
-      };
-    }
+    // Let the component handle the error
     console.error("Error fetching tickets:", error);
     throw error;
   }
@@ -130,15 +121,7 @@ export const getAllTransactions = async (params = {}) => {
     const response = await axios.get("/transactions", { params });
     return response.data;
   } catch (error) {
-    // If it's a 404, interpret as "no transactions yet"
-    if (error.response?.status === 404) {
-      return {
-        transactions: [],
-        pages: 0,
-        total: 0,
-        totalRevenue: 0
-      };
-    }
+    // Let the component handle the error
     console.error("Error fetching transactions:", error);
     throw error;
   }
@@ -154,7 +137,7 @@ export const cancelTransaction = async (transactionId) => {
     console.error("Error cancelling transaction:", error);
     throw error;
   }
-};// Add these functions to your existing adminService.js
+}; // Add these functions to your existing adminService.js
 
 // Mark ticket as used (admin only)
 export const markTicketAsUsed = async (ticketId) => {

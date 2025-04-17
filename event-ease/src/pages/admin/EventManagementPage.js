@@ -25,7 +25,6 @@ const EventManagementPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
   const [filterFeatured, setFilterFeatured] = useState("");
   const [filterDateRange, setFilterDateRange] = useState("");
   const { showToast } = useToast();
@@ -50,43 +49,51 @@ const EventManagementPage = () => {
         params.category = filterCategory;
       }
 
-      if (filterStatus) {
-        params.status = filterStatus;
-      }
-
       const data = await getEvents(params);
       let filteredEvents = data.events || [];
-      
+
       // Client-side filtering for featured status
       if (filterFeatured === "featured") {
-        filteredEvents = filteredEvents.filter(event => event.isFeatured);
+        filteredEvents = filteredEvents.filter((event) => event.isFeatured);
       } else if (filterFeatured === "not-featured") {
-        filteredEvents = filteredEvents.filter(event => !event.isFeatured);
+        filteredEvents = filteredEvents.filter((event) => !event.isFeatured);
       }
-      
+
       // Client-side filtering for date range
       if (filterDateRange) {
         const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        
-        switch(filterDateRange) {
+        const today = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+
+        switch (filterDateRange) {
           case "upcoming":
-            filteredEvents = filteredEvents.filter(event => new Date(event.startDate) >= today);
+            filteredEvents = filteredEvents.filter(
+              (event) => new Date(event.startDate) >= today
+            );
             break;
           case "past":
-            filteredEvents = filteredEvents.filter(event => new Date(event.startDate) < today);
+            filteredEvents = filteredEvents.filter(
+              (event) => new Date(event.startDate) < today
+            );
             break;
           case "this-week":
             const weekEnd = new Date(today);
             weekEnd.setDate(today.getDate() + 7);
-            filteredEvents = filteredEvents.filter(event => {
+            filteredEvents = filteredEvents.filter((event) => {
               const eventDate = new Date(event.startDate);
               return eventDate >= today && eventDate <= weekEnd;
             });
             break;
           case "this-month":
-            const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-            filteredEvents = filteredEvents.filter(event => {
+            const monthEnd = new Date(
+              today.getFullYear(),
+              today.getMonth() + 1,
+              0
+            );
+            filteredEvents = filteredEvents.filter((event) => {
               const eventDate = new Date(event.startDate);
               return eventDate >= today && eventDate <= monthEnd;
             });
@@ -95,16 +102,16 @@ const EventManagementPage = () => {
             break;
         }
       }
-      
+
       setEvents(filteredEvents);
-      setTotalPages(Math.ceil(filteredEvents.length / 10));
+      setTotalPages(Math.ceil(filteredEvents.length / 10) || 1);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching events:", err);
       setError("Failed to load events. Please try again.");
       setLoading(false);
     }
-  }, [page, searchQuery, filterCategory, filterStatus, filterFeatured, filterDateRange]);
+  }, [page, searchQuery, filterCategory, filterFeatured, filterDateRange]);
 
   // Load events on mount and when dependencies change
   useEffect(() => {
@@ -128,18 +135,12 @@ const EventManagementPage = () => {
     setPage(1); // Reset to first page when filtering
   };
 
-  // Handle status filter change
-  const handleStatusFilterChange = (e) => {
-    setFilterStatus(e.target.value);
-    setPage(1); // Reset to first page when filtering
-  };
-  
   // Handle featured filter change
   const handleFeaturedFilterChange = (e) => {
     setFilterFeatured(e.target.value);
     setPage(1); // Reset to first page when filtering
   };
-  
+
   // Handle date range filter change
   const handleDateRangeFilterChange = (e) => {
     setFilterDateRange(e.target.value);
@@ -238,9 +239,9 @@ const EventManagementPage = () => {
               />
             </InputGroup>
           </div>
-          
+
           <div className="row g-3">
-            <div className="col-md-3">
+            <div className="col-md-4">
               <Form.Group>
                 <Form.Label>Category</Form.Label>
                 <Form.Select
@@ -259,22 +260,8 @@ const EventManagementPage = () => {
                 </Form.Select>
               </Form.Group>
             </div>
-            
-            <div className="col-md-3">
-              <Form.Group>
-                <Form.Label>Status</Form.Label>
-                <Form.Select
-                  value={filterStatus}
-                  onChange={handleStatusFilterChange}
-                >
-                  <option value="">All Statuses</option>
-                  <option value="active">Active</option>
-                  <option value="cancelled">Cancelled</option>
-                </Form.Select>
-              </Form.Group>
-            </div>
-            
-            <div className="col-md-3">
+
+            <div className="col-md-4">
               <Form.Group>
                 <Form.Label>Featured</Form.Label>
                 <Form.Select
@@ -287,8 +274,8 @@ const EventManagementPage = () => {
                 </Form.Select>
               </Form.Group>
             </div>
-            
-            <div className="col-md-3">
+
+            <div className="col-md-4">
               <Form.Group>
                 <Form.Label>Date Range</Form.Label>
                 <Form.Select
@@ -319,7 +306,10 @@ const EventManagementPage = () => {
               ></i>
               <h4 className="mt-3">No Events Found</h4>
               <p className="text-muted mb-3">
-                {searchQuery || filterCategory || filterStatus || filterFeatured || filterDateRange
+                {searchQuery ||
+                filterCategory ||
+                filterFeatured ||
+                filterDateRange
                   ? "No events match your search or filter criteria."
                   : "There are no events in the system yet."}
               </p>

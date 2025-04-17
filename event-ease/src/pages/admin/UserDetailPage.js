@@ -4,15 +4,12 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Card,
   Button,
+  Badge,
   Spinner,
   Alert,
   Row,
   Col,
   Form,
-  Badge,
-  ListGroup,
-  Tab,
-  Nav,
   Modal,
 } from "react-bootstrap";
 import AdminLayout from "../../components/layout/AdminLayout";
@@ -41,6 +38,7 @@ const UserDetailPage = () => {
     username: "",
     role: "",
     active: true,
+    password: "",
   });
 
   // Fetch user data
@@ -56,6 +54,7 @@ const UserDetailPage = () => {
           username: userData.username,
           role: userData.role,
           active: userData.active,
+          password: "",
         });
         setLoading(false);
       } catch (err) {
@@ -81,14 +80,13 @@ const UserDetailPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Only send the fields we want to update
-      const dataToSend = {
-        name: formData.name,
-        email: formData.email,
-        username: formData.username,
-        role: formData.role,
-        active: formData.active,
-      };
+      // Create a copy of the form data
+      const dataToSend = { ...formData };
+
+      // Only include password in the request if it's not empty
+      if (!dataToSend.password || dataToSend.password.trim() === "") {
+        delete dataToSend.password;
+      }
 
       await updateUser(userId, dataToSend);
       showToast("User updated successfully", "success");
@@ -132,6 +130,16 @@ const UserDetailPage = () => {
       default:
         return <Badge bg="secondary">{role}</Badge>;
     }
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
   if (loading) {
@@ -187,23 +195,14 @@ const UserDetailPage = () => {
         <div className="d-flex justify-content-between align-items-center">
           <h2 className="mb-0">User Details</h2>
           <div>
-            {editing ? (
-              <Button
-                variant="outline-secondary"
-                className="me-2"
-                onClick={() => setEditing(false)}
-              >
-                Cancel
-              </Button>
-            ) : (
-              <Button
-                variant="outline-primary"
-                className="me-2"
-                onClick={() => setEditing(true)}
-              >
-                Edit User
-              </Button>
-            )}
+            <Button
+              variant="outline-primary"
+              className="me-2"
+              onClick={() => setEditing(true)}
+              disabled={editing}
+            >
+              Edit User
+            </Button>
             <Button
               variant="outline-danger"
               onClick={() => setShowDeleteModal(true)}
@@ -214,90 +213,15 @@ const UserDetailPage = () => {
         </div>
       </div>
 
-      <Row>
-        <Col lg={4}>
-          <Card className="mb-4">
-            <Card.Body className="text-center">
-              <div
-                className="avatar mb-3"
-                style={{
-                  width: "100px",
-                  height: "100px",
-                  borderRadius: "50%",
-                  backgroundColor: "#e9ecef",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "2.5rem",
-                  margin: "0 auto",
-                }}
-              >
-                {user.name[0].toUpperCase()}
-              </div>
-              <h4>{user.name}</h4>
-              <p className="text-muted mb-1">{user.email}</p>
-              <p className="mb-3">
-                {getRoleBadge(user.role)}
-                <Badge bg={user.active ? "success" : "danger"} className="ms-2">
-                  {user.active ? "Active" : "Inactive"}
-                </Badge>
-              </p>
-            </Card.Body>
-          </Card>
-
-          <Card className="mb-4">
-            <Card.Header>
-              <h5 className="mb-0">User Information</h5>
-            </Card.Header>
-            <ListGroup variant="flush">
-              <ListGroup.Item>
-                <Row>
-                  <Col md={4} className="text-muted">
-                    Username
-                  </Col>
-                  <Col md={8}>{user.username}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col md={4} className="text-muted">
-                    Joined
-                  </Col>
-                  <Col md={8}>
-                    {new Date(user.createdAt).toLocaleDateString(undefined, {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col md={4} className="text-muted">
-                    Last Updated
-                  </Col>
-                  <Col md={8}>
-                    {new Date(user.updatedAt).toLocaleDateString(undefined, {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </Col>
-                </Row>
-              </ListGroup.Item>
-            </ListGroup>
-          </Card>
-        </Col>
-
-        <Col lg={8}>
-          {editing ? (
-            <Card className="mb-4">
-              <Card.Header>
-                <h5 className="mb-0">Edit User</h5>
-              </Card.Header>
-              <Card.Body>
-                <Form onSubmit={handleSubmit}>
+      {editing ? (
+        <Card className="mb-4">
+          <Card.Header className="bg-light">
+            <h5 className="mb-0">Edit User</h5>
+          </Card.Header>
+          <Card.Body>
+            <Form onSubmit={handleSubmit}>
+              <Row>
+                <Col md={6}>
                   <Form.Group className="mb-3">
                     <Form.Label>Name</Form.Label>
                     <Form.Control
@@ -308,18 +232,8 @@ const UserDetailPage = () => {
                       required
                     />
                   </Form.Group>
-
-                  <Form.Group className="mb-3">
-                    <Form.Label>Email</Form.Label>
-                    <Form.Control
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </Form.Group>
-
+                </Col>
+                <Col md={6}>
                   <Form.Group className="mb-3">
                     <Form.Label>Username</Form.Label>
                     <Form.Control
@@ -330,7 +244,22 @@ const UserDetailPage = () => {
                       required
                     />
                   </Form.Group>
+                </Col>
+              </Row>
 
+              <Form.Group className="mb-3">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Form.Group>
+
+              <Row>
+                <Col md={6}>
                   <Form.Group className="mb-3">
                     <Form.Label>Role</Form.Label>
                     <Form.Select
@@ -348,115 +277,175 @@ const UserDetailPage = () => {
                       events. Organizers can create and manage their own events.
                     </Form.Text>
                   </Form.Group>
-
+                </Col>
+                <Col md={6}>
                   <Form.Group className="mb-3">
-                    <Form.Check
-                      type="checkbox"
-                      label="Active"
-                      name="active"
-                      checked={formData.active}
+                    <Form.Label>
+                      Password (leave blank to keep current)
+                    </Form.Label>
+                    <Form.Control
+                      type="password"
+                      name="password"
+                      value={formData.password}
                       onChange={handleInputChange}
+                      placeholder="Enter new password or leave blank"
                     />
                   </Form.Group>
+                </Col>
+              </Row>
 
-                  <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <Button
-                      variant="secondary"
-                      onClick={() => setEditing(false)}
+              <Form.Group className="mb-4">
+                <Form.Check
+                  type="checkbox"
+                  label="Active Account"
+                  name="active"
+                  checked={formData.active}
+                  onChange={handleInputChange}
+                />
+              </Form.Group>
+
+              <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                <Button variant="secondary" onClick={() => setEditing(false)}>
+                  Cancel
+                </Button>
+                <Button variant="primary" type="submit">
+                  Save Changes
+                </Button>
+              </div>
+            </Form>
+          </Card.Body>
+        </Card>
+      ) : (
+        <Card className="mb-4">
+          <Card.Body>
+            <Row>
+              <Col md={3}>
+                <div className="text-center">
+                  <div
+                    className="avatar mb-3"
+                    style={{
+                      width: "120px",
+                      height: "120px",
+                      borderRadius: "50%",
+                      backgroundColor: "#e9ecef",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "3rem",
+                      margin: "0 auto",
+                    }}
+                  >
+                    {user.name[0].toUpperCase()}
+                  </div>
+                  <h4 className="mb-1">{user.name}</h4>
+                  <div className="mb-2">
+                    {getRoleBadge(user.role)}
+                    <Badge
+                      bg={user.active ? "success" : "danger"}
+                      className="ms-2"
                     >
-                      Cancel
-                    </Button>
-                    <Button variant="primary" type="submit">
-                      Save Changes
+                      {user.active ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => setEditing(true)}
+                    className="mt-2"
+                  >
+                    <i className="bi bi-pencil-square me-1"></i> Edit
+                  </Button>
+                </div>
+              </Col>
+              <Col md={9}>
+                <div className="mb-4">
+                  <h5 className="border-bottom pb-2 text-primary">
+                    Contact Information
+                  </h5>
+                  <Row className="mb-2">
+                    <Col md={3} className="text-muted">
+                      Email:
+                    </Col>
+                    <Col md={9}>{user.email}</Col>
+                  </Row>
+                  <Row className="mb-2">
+                    <Col md={3} className="text-muted">
+                      Username:
+                    </Col>
+                    <Col md={9}>{user.username}</Col>
+                  </Row>
+                </div>
+
+                <div>
+                  <h5 className="border-bottom pb-2 text-primary">
+                    Account Details
+                  </h5>
+                  <Row className="mb-2">
+                    <Col md={3} className="text-muted">
+                      Account Created:
+                    </Col>
+                    <Col md={9}>{formatDate(user.createdAt)}</Col>
+                  </Row>
+                  <Row className="mb-2">
+                    <Col md={3} className="text-muted">
+                      Last Updated:
+                    </Col>
+                    <Col md={9}>{formatDate(user.updatedAt)}</Col>
+                  </Row>
+                  <Row className="mb-2">
+                    <Col md={3} className="text-muted">
+                      Account Type:
+                    </Col>
+                    <Col md={9}>
+                      {user.role === "admin"
+                        ? "Administrator"
+                        : user.role === "organizer"
+                        ? "Event Organizer"
+                        : "Standard User"}
+                    </Col>
+                  </Row>
+                  <Row className="mb-2">
+                    <Col md={3} className="text-muted">
+                      Status:
+                    </Col>
+                    <Col md={9}>
+                      {user.active ? (
+                        <span className="text-success">
+                          <i className="bi bi-check-circle-fill me-1"></i>Active
+                        </span>
+                      ) : (
+                        <span className="text-danger">
+                          <i className="bi bi-x-circle-fill me-1"></i>Inactive
+                        </span>
+                      )}
+                    </Col>
+                  </Row>
+                </div>
+
+                {user.role === "organizer" && (
+                  <div className="mt-4">
+                    <h5 className="border-bottom pb-2 text-primary">
+                      Organizer Details
+                    </h5>
+                    <p className="text-muted mb-2">
+                      This user can create and manage events on the platform.
+                    </p>
+                    <Button
+                      as={Link}
+                      to={`/admin/events`}
+                      variant="outline-primary"
+                      size="sm"
+                    >
+                      <i className="bi bi-calendar-event me-1"></i> View All
+                      Events
                     </Button>
                   </div>
-                </Form>
-              </Card.Body>
-            </Card>
-          ) : (
-            <Tab.Container defaultActiveKey="activity">
-              <Card className="mb-4">
-                <Card.Header>
-                  <Nav variant="tabs">
-                    <Nav.Item>
-                      <Nav.Link eventKey="activity">Activity</Nav.Link>
-                    </Nav.Item>
-                    <Nav.Item>
-                      <Nav.Link eventKey="tickets">Tickets</Nav.Link>
-                    </Nav.Item>
-                    <Nav.Item>
-                      <Nav.Link eventKey="transactions">Transactions</Nav.Link>
-                    </Nav.Item>
-                    {user.role === "organizer" && (
-                      <Nav.Item>
-                        <Nav.Link eventKey="events">Events</Nav.Link>
-                      </Nav.Item>
-                    )}
-                  </Nav>
-                </Card.Header>
-                <Card.Body>
-                  <Tab.Content>
-                    <Tab.Pane eventKey="activity">
-                      <div className="text-center py-5">
-                        <i
-                          className="bi bi-activity text-muted"
-                          style={{ fontSize: "3rem" }}
-                        ></i>
-                        <h5 className="mt-3">User Activity</h5>
-                        <p className="text-muted">
-                          Activity tracking is not implemented yet. Check back
-                          later.
-                        </p>
-                      </div>
-                    </Tab.Pane>
-                    <Tab.Pane eventKey="tickets">
-                      <div className="text-center py-5">
-                        <i
-                          className="bi bi-ticket-perforated text-muted"
-                          style={{ fontSize: "3rem" }}
-                        ></i>
-                        <h5 className="mt-3">User Tickets</h5>
-                        <p className="text-muted">
-                          Ticket history will be displayed here. Implementation
-                          in progress.
-                        </p>
-                      </div>
-                    </Tab.Pane>
-                    <Tab.Pane eventKey="transactions">
-                      <div className="text-center py-5">
-                        <i
-                          className="bi bi-cash-coin text-muted"
-                          style={{ fontSize: "3rem" }}
-                        ></i>
-                        <h5 className="mt-3">Transaction History</h5>
-                        <p className="text-muted">
-                          Transaction history will be displayed here.
-                          Implementation in progress.
-                        </p>
-                      </div>
-                    </Tab.Pane>
-                    {user.role === "organizer" && (
-                      <Tab.Pane eventKey="events">
-                        <div className="text-center py-5">
-                          <i
-                            className="bi bi-calendar-event text-muted"
-                            style={{ fontSize: "3rem" }}
-                          ></i>
-                          <h5 className="mt-3">User Events</h5>
-                          <p className="text-muted">
-                            Events created by this organizer will be displayed
-                            here. Implementation in progress.
-                          </p>
-                        </div>
-                      </Tab.Pane>
-                    )}
-                  </Tab.Content>
-                </Card.Body>
-              </Card>
-            </Tab.Container>
-          )}
-        </Col>
-      </Row>
+                )}
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
+      )}
 
       {/* Delete User Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>

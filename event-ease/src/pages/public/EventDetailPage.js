@@ -12,7 +12,7 @@ import "./EventDetailPage.css";
 const TicketSelector = ({ event, onQuantityChange }) => {
   const [quantity, setQuantity] = useState(1);
   const [totalPrice, setTotalPrice] = useState(event.ticketPrice);
-  
+
   useEffect(() => {
     setTotalPrice(event.ticketPrice * quantity);
     onQuantityChange(quantity, totalPrice);
@@ -37,12 +37,12 @@ const TicketSelector = ({ event, onQuantityChange }) => {
         <span>Price per ticket:</span>
         <span className="fw-bold">${event.ticketPrice.toFixed(2)}</span>
       </div>
-      
+
       <div className="quantity-selector d-flex align-items-center mb-3">
         <span>Quantity:</span>
         <div className="d-flex align-items-center ms-auto">
-          <Button 
-            variant="outline-secondary" 
+          <Button
+            variant="outline-secondary"
             size="sm"
             onClick={decrementQuantity}
             disabled={quantity <= 1}
@@ -52,8 +52,8 @@ const TicketSelector = ({ event, onQuantityChange }) => {
             -
           </Button>
           <span className="mx-3">{quantity}</span>
-          <Button 
-            variant="outline-secondary" 
+          <Button
+            variant="outline-secondary"
             size="sm"
             onClick={incrementQuantity}
             disabled={quantity >= event.ticketsRemaining}
@@ -64,7 +64,7 @@ const TicketSelector = ({ event, onQuantityChange }) => {
           </Button>
         </div>
       </div>
-      
+
       <div className="total-price d-flex justify-content-between align-items-center mb-3">
         <span>Total:</span>
         <span className="fw-bold fs-5">${totalPrice.toFixed(2)}</span>
@@ -117,16 +117,16 @@ const EventDetailPage = () => {
     try {
       const result = await bookTickets(id, ticketQuantity);
       // Navigate to checkout page with the booking details
-      navigate('/checkout', { 
-        state: { 
+      navigate("/checkout", {
+        state: {
           tickets: result.tickets,
           event: event,
           totalPrice: result.totalPrice,
-          quantity: ticketQuantity 
-        } 
+          quantity: ticketQuantity,
+        },
       });
     } catch (err) {
-      setError('Failed to book tickets. Please try again.');
+      setError("Failed to book tickets. Please try again.");
       console.error(err);
     } finally {
       setBookingInProgress(false);
@@ -191,9 +191,14 @@ const EventDetailPage = () => {
             >
               <img
                 src={
-                  event.imageUrl.startsWith("http")
+                  event.imageUrl && event.imageUrl.startsWith("http")
                     ? event.imageUrl
-                    : `/uploads/events/${event.imageUrl}`
+                    : event.imageUrl
+                    ? `http://localhost:5001/${event.imageUrl.replace(
+                        /^\//,
+                        ""
+                      )}`
+                    : "/images/event-placeholder.png"
                 }
                 alt={event.title}
                 onError={(e) => {
@@ -265,14 +270,14 @@ const EventDetailPage = () => {
 
               {/* Replace the static price display with the ticket selector */}
               {event.status === "active" &&
-                !isEventPast &&
-                event.ticketsRemaining > 0 ? (
+              !isEventPast &&
+              event.ticketsRemaining > 0 ? (
                 <>
-                  <TicketSelector 
-                    event={event} 
-                    onQuantityChange={handleQuantityChange} 
+                  <TicketSelector
+                    event={event}
+                    onQuantityChange={handleQuantityChange}
                   />
-                  
+
                   {isAuthenticated ? (
                     <Button
                       variant="primary"
@@ -282,11 +287,15 @@ const EventDetailPage = () => {
                     >
                       {bookingInProgress ? (
                         <>
-                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                          <span
+                            className="spinner-border spinner-border-sm me-2"
+                            role="status"
+                            aria-hidden="true"
+                          ></span>
                           Processing...
                         </>
                       ) : (
-                        'Book Tickets'
+                        "Book Tickets"
                       )}
                     </Button>
                   ) : (
