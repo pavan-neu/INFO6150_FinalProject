@@ -1,5 +1,10 @@
 const express = require("express");
 const dotenv = require("dotenv");
+
+// Load environment variables
+dotenv.config();
+console.log('STRIPE_SECRET_KEY:', process.env.STRIPE_SECRET_KEY ? 'Present' : 'Missing');
+
 const cors = require("cors");
 const morgan = require("morgan");
 const connectDB = require("./config/db");
@@ -11,9 +16,10 @@ const userRoutes = require("./routes/userRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const ticketRoutes = require("./routes/ticketRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
+// Add this new import
+const paymentRoutes = require("./routes/paymentRoutes");
 
-// Load environment variables
-dotenv.config();
+
 
 // Connect to database
 connectDB();
@@ -22,6 +28,11 @@ const app = express();
 
 // Middleware
 app.use(cors());
+
+// Special handling for Stripe webhook - must come before express.json()
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+
+// Standard JSON parsing for other routes
 app.use(express.json());
 
 // Logger
@@ -52,6 +63,8 @@ app.use("/api/users", userRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/transactions", transactionRoutes);
+// Add new payment routes
+app.use("/api/payments", paymentRoutes);
 
 // Basic route for testing
 app.get("/", (req, res) => {

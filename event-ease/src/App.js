@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import GlobalToast from "./components/ui/GlobalToast";
+// Add these imports for Stripe integration
+import { Elements } from '@stripe/react-stripe-js';
+import stripePromise from './utils/stripeConfig';
 
 // Layout Components
 import Navbar from "./components/layout/Navbar";
@@ -70,238 +73,241 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <Router>
-          <Navbar />
-          <GlobalToast />
-          <main className="min-vh-100">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/unauthorized" element={<UnauthorizedPage />} />
-              <Route path="/events" element={<EventsPage />} />
-              <Route path="/events/:id" element={<EventDetailPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/faq" element={<FAQPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/components-demo" element={<ComponentsDemo />} />
+        {/* Wrap the entire app with Stripe Elements provider */}
+        <Elements stripe={stripePromise}>
+          <Router>
+            <Navbar />
+            <GlobalToast />
+            <main className="min-vh-100">
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<HomePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/unauthorized" element={<UnauthorizedPage />} />
+                <Route path="/events" element={<EventsPage />} />
+                <Route path="/events/:id" element={<EventDetailPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/faq" element={<FAQPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/components-demo" element={<ComponentsDemo />} />
 
-              {/* User Routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <UserDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/tickets"
-                element={
-                  <ProtectedRoute>
-                    <UserTicketsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/tickets/:ticketId"
-                element={
-                  <ProtectedRoute>
-                    <TicketDetailPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/tickets/:ticketId/cancel"
-                element={
-                  <ProtectedRoute>
-                    <TicketCancellationPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/transactions"
-                element={
-                  <ProtectedRoute>
-                    <UserTransactionsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/transactions/:transactionId"
-                element={
-                  <ProtectedRoute>
-                    <TransactionDetailPage />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Add the new checkout route here */}
-              <Route
-                path="/checkout"
-                element={
-                  <ProtectedRoute>
-                    <CheckoutPage />
-                  </ProtectedRoute>
-                }
-              />
+                {/* User Routes */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <UserDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/tickets"
+                  element={
+                    <ProtectedRoute>
+                      <UserTicketsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/tickets/:ticketId"
+                  element={
+                    <ProtectedRoute>
+                      <TicketDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/tickets/:ticketId/cancel"
+                  element={
+                    <ProtectedRoute>
+                      <TicketCancellationPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/transactions"
+                  element={
+                    <ProtectedRoute>
+                      <UserTransactionsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/transactions/:transactionId"
+                  element={
+                    <ProtectedRoute>
+                      <TransactionDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Add the new checkout route here */}
+                <Route
+                  path="/checkout"
+                  element={
+                    <ProtectedRoute>
+                      <CheckoutPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Organizer Routes - Deny access to admin users */}
-              <Route
-                path="/organizer/dashboard"
-                element={
-                  <ProtectedRoute
-                    allowedRoles={["organizer"]}
-                    denyRoles={["admin"]}
-                  >
-                    <OrganizerDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/organizer/events/create"
-                element={
-                  <ProtectedRoute
-                    allowedRoles={["organizer"]}
-                    denyRoles={["admin"]}
-                  >
-                    <CreateEventPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/organizer/events/:eventId/edit"
-                element={
-                  <ProtectedRoute
-                    allowedRoles={["organizer"]}
-                    denyRoles={["admin"]}
-                  >
-                    <EditEventPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/organizer/events"
-                element={
-                  <ProtectedRoute
-                    allowedRoles={["organizer"]}
-                    denyRoles={["admin"]}
-                  >
-                    <OrganizerEventsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/organizer/events/:eventId/tickets"
-                element={
-                  <ProtectedRoute
-                    allowedRoles={["organizer"]}
-                    denyRoles={["admin"]}
-                  >
-                    <EventTicketsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/organizer/tickets/:ticketId"
-                element={
-                  <ProtectedRoute
-                    allowedRoles={["organizer"]}
-                    denyRoles={["admin"]}
-                  >
-                    <TicketDetailPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/organizer/events/:eventId/sales"
-                element={
-                  <ProtectedRoute
-                    allowedRoles={["organizer"]}
-                    denyRoles={["admin"]}
-                  >
-                    <EventSalesPage />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Organizer Routes - Deny access to admin users */}
+                <Route
+                  path="/organizer/dashboard"
+                  element={
+                    <ProtectedRoute
+                      allowedRoles={["organizer"]}
+                      denyRoles={["admin"]}
+                    >
+                      <OrganizerDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/organizer/events/create"
+                  element={
+                    <ProtectedRoute
+                      allowedRoles={["organizer"]}
+                      denyRoles={["admin"]}
+                    >
+                      <CreateEventPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/organizer/events/:eventId/edit"
+                  element={
+                    <ProtectedRoute
+                      allowedRoles={["organizer"]}
+                      denyRoles={["admin"]}
+                    >
+                      <EditEventPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/organizer/events"
+                  element={
+                    <ProtectedRoute
+                      allowedRoles={["organizer"]}
+                      denyRoles={["admin"]}
+                    >
+                      <OrganizerEventsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/organizer/events/:eventId/tickets"
+                  element={
+                    <ProtectedRoute
+                      allowedRoles={["organizer"]}
+                      denyRoles={["admin"]}
+                    >
+                      <EventTicketsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/organizer/tickets/:ticketId"
+                  element={
+                    <ProtectedRoute
+                      allowedRoles={["organizer"]}
+                      denyRoles={["admin"]}
+                    >
+                      <TicketDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/organizer/events/:eventId/sales"
+                  element={
+                    <ProtectedRoute
+                      allowedRoles={["organizer"]}
+                      denyRoles={["admin"]}
+                    >
+                      <EventSalesPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Admin Routes */}
-              <Route
-                path="/admin/dashboard"
-                element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/users"
-                element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <UserManagementPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/users/:userId"
-                element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <UserDetailPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/events"
-                element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <EventManagementPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/events/:eventId"
-                element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <AdminEventDetailPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/events/featured"
-                element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <AdminFeaturedEventsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/tickets"
-                element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <AdminTicketsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/transactions"
-                element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <AdminTransactionsPage />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </main>
-          <Footer />
-        </Router>
+                {/* Admin Routes */}
+                <Route
+                  path="/admin/dashboard"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/users"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <UserManagementPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/users/:userId"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <UserDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/events"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <EventManagementPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/events/:eventId"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <AdminEventDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/events/featured"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <AdminFeaturedEventsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/tickets"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <AdminTicketsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/transactions"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <AdminTransactionsPage />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </main>
+            <Footer />
+          </Router>
+        </Elements>
       </ToastProvider>
     </AuthProvider>
   );
