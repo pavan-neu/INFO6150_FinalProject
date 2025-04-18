@@ -101,58 +101,54 @@ const AboutPage = () => {
         <Col lg={12}>
           <h2 className="text-center mb-4">Our Team</h2>
         </Col>
-        <Col md={3} className="mb-4">
-          <Card className="h-100 shadow-sm">
-            <Card.Img
-              variant="top"
-              src="https://placehold.co/300x300?text=CEO"
-              alt="CEO"
-            />
-            <Card.Body className="text-center">
-              <h3 className="h5">Sarah Johnson</h3>
-              <p className="text-muted">CEO & Co-founder</p>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3} className="mb-4">
-          <Card className="h-100 shadow-sm">
-            <Card.Img
-              variant="top"
-              src="https://placehold.co/300x300?text=CTO"
-              alt="CTO"
-            />
-            <Card.Body className="text-center">
-              <h3 className="h5">Michael Chen</h3>
-              <p className="text-muted">CTO & Co-founder</p>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3} className="mb-4">
-          <Card className="h-100 shadow-sm">
-            <Card.Img
-              variant="top"
-              src="https://placehold.co/300x300?text=Design"
-              alt="Design Lead"
-            />
-            <Card.Body className="text-center">
-              <h3 className="h5">Olivia Smith</h3>
-              <p className="text-muted">Design Lead</p>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3} className="mb-4">
-          <Card className="h-100 shadow-sm">
-            <Card.Img
-              variant="top"
-              src="https://placehold.co/300x300?text=Marketing"
-              alt="Marketing Director"
-            />
-            <Card.Body className="text-center">
-              <h3 className="h5">David Park</h3>
-              <p className="text-muted">Marketing Director</p>
-            </Card.Body>
-          </Card>
-        </Col>
+
+        {/* First row of team members */}
+        <Row className="justify-content-center mb-4">
+          <Col lg={4} md={4} className="mb-4">
+            <Card className="h-100 shadow-sm">
+              <Card.Body className="text-center p-4">
+                <h3 className="h5 mb-2">Pavan Garlapati</h3>
+                <p className="text-muted mb-0">Full Stack Developer</p>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col lg={4} md={4} className="mb-4">
+            <Card className="h-100 shadow-sm">
+              <Card.Body className="text-center p-4">
+                <h3 className="h5 mb-2">Navya Ravuri</h3>
+                <p className="text-muted mb-0">Full Stack Developer</p>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col lg={4} md={4} className="mb-4">
+            <Card className="h-100 shadow-sm">
+              <Card.Body className="text-center p-4">
+                <h3 className="h5 mb-2">Dikshith Pulakanti</h3>
+                <p className="text-muted mb-0">Frontend Developer</p>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Second row of team members */}
+        <Row className="justify-content-center">
+          <Col lg={4} md={4} className="mb-4">
+            <Card className="h-100 shadow-sm">
+              <Card.Body className="text-center p-4">
+                <h3 className="h5 mb-2">Praneeth Reddy</h3>
+                <p className="text-muted mb-0">Frontend Developer</p>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col lg={4} md={4} className="mb-4">
+            <Card className="h-100 shadow-sm">
+              <Card.Body className="text-center p-4">
+                <h3 className="h5 mb-2">Aravind Sundaravadivelu</h3>
+                <p className="text-muted mb-0">Backend Developer</p>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
       </Row>
 
       <Row>
