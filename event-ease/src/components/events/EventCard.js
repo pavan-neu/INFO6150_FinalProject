@@ -53,10 +53,13 @@ const EventCard = ({ event }) => {
         <Card.Img
           variant="top"
           src={
-            imageUrl && imageUrl.startsWith("http")
-              ? imageUrl
-              : imageUrl
-              ? `${BACKEND_URL}/${imageUrl.replace(/^\//, "")}`
+            event.imageUrl && event.imageUrl.startsWith("http")
+              ? event.imageUrl
+              : event.imageUrl
+              ? `https://info6150-finalproject.onrender.com/${event.imageUrl.replace(
+                  /^\//,
+                  ""
+                )}`
               : placeholderImage
           }
           alt={title}
