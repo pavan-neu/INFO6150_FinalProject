@@ -365,12 +365,6 @@ const OrganizerDashboard = () => {
                           </td>
                           <td>
                             <Link
-                              to={`/organizer/events/${event._id}`}
-                              className="btn btn-sm btn-outline-primary me-2"
-                            >
-                              Manage
-                            </Link>
-                            <Link
                               to={`/events/${event._id}`}
                               className="btn btn-sm btn-outline-secondary"
                             >

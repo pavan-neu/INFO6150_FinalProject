@@ -34,8 +34,7 @@ const CTASection = ({
             <div className="cta-image-container">
               <img
                 src={
-                  imageUrl ||
-                  "https://via.placeholder.com/600x400?text=EventEase"
+                  imageUrl || "https://placehold.co/600x400?text=Call to Action"
                 }
                 alt="Call to action"
                 className="cta-image img-fluid"

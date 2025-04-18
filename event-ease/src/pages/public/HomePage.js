@@ -94,7 +94,7 @@ const HomePage = () => {
           subtitle="Sign up today and start exploring events that match your interests. Find your next unforgettable experience with EventEase."
           buttonText="Register Now"
           buttonLink="/register"
-          imageUrl="https://images.unsplash.com/photo-1540317580384-e5d43867caa6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80"
+          imageUrl="https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg"
         />
       ) : (
         <CTASection
@@ -103,7 +103,7 @@ const HomePage = () => {
           subtitle="Explore and book tickets for upcoming events that match your interests. We've curated amazing experiences just for you."
           buttonText="Browse Events"
           buttonLink="/events"
-          imageUrl="https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80"
+          imageUrl="https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg"
         />
       )}
 
