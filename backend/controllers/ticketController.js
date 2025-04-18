@@ -93,40 +93,40 @@ const bookTickets = async (req, res) => {
 // @access  Private
 const processExpiredReservations = async () => {
   try {
-    console.log('Checking for expired ticket reservations...');
-    
+    console.log("Checking for expired ticket reservations...");
+
     // Find all expired reservations
     const expiredTickets = await Ticket.find({
-      status: 'reserved',
-      reservationExpiry: { $lt: new Date() }
+      status: "reserved",
+      reservationExpiry: { $lt: new Date() },
     });
-    
+
     console.log(`Found ${expiredTickets.length} expired ticket reservations`);
-    
+
     // Process each expired ticket
     for (const ticket of expiredTickets) {
       // Update ticket status
-      ticket.status = 'cancelled';
+      ticket.status = "cancelled";
       await ticket.save();
-      
+
       // Update event ticket count
       await Event.findByIdAndUpdate(ticket.event, {
-        $inc: { ticketsRemaining: 1 }
+        $inc: { ticketsRemaining: 1 },
       });
-      
+
       console.log(`Released ticket ${ticket.ticketNumber}`);
     }
-    
+
     return {
       processedCount: expiredTickets.length,
-      success: true
+      success: true,
     };
   } catch (error) {
-    console.error('Error processing expired tickets:', error);
+    console.error("Error processing expired tickets:", error);
     return {
       processedCount: 0,
       success: false,
-      error: error.message
+      error: error.message,
     };
   }
 };

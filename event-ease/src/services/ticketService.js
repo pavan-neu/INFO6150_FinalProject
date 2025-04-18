@@ -16,11 +16,11 @@ export const bookTickets = async (eventId, quantity) => {
 };
 
 // Get tickets for a specific user (admin only)
-export const getUserTickets = async (userId, page = 1, limit = 10) => {
+export const getUserTickets = async (page = 1, limit = 10) => {
   try {
-    const response = await axios.get(`/users/${userId}/tickets`, {
-      params: { page, limit },
-    });
+    const response = await axios.get(
+      `/tickets/my-tickets?page=${page}&limit=${limit}`
+    );
     return response.data;
   } catch (error) {
     console.error("Error fetching user tickets:", error);

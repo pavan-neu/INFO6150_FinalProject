@@ -40,7 +40,7 @@ const Navbar = () => {
     >
       <Container>
         <BootstrapNavbar.Brand as={Link} to="/" className="fw-bold fs-4">
-          Event<span className="text-info">Ease</span>
+          Event<span className="brand-accent">Ease</span>
         </BootstrapNavbar.Brand>
 
         <BootstrapNavbar.Toggle

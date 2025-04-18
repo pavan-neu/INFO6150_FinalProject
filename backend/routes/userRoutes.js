@@ -11,8 +11,6 @@ const {
   uploadProfileImage,
   getUsers,
   getUserById,
-  getUserTickets,
-  getUserTransactions,
   updateUser,
   deleteUser,
 } = require("../controllers/userController");
@@ -33,12 +31,6 @@ router.put("/profile/name", protect, updateUserName);
 router.put("/profile/email", protect, updateUserEmail);
 router.put("/profile/username", protect, updateUsername);
 router.put("/profile/password", protect, updatePassword);
-
-// Get user tickets (admin only)
-router.get("/:id/tickets", protect, admin, getUserTickets);
-
-// Get user transactions (admin only)
-router.get("/:id/transactions", protect, admin, getUserTransactions);
 
 // Profile image upload route
 router.post(
