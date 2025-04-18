@@ -55,7 +55,10 @@ const EventCard = ({ event }) => {
             imageUrl && imageUrl.startsWith("http")
               ? imageUrl
               : imageUrl
-              ? `http://localhost:5001/${imageUrl.replace(/^\//, "")}`
+              ? `https://info6150-finalproject.onrender.com/${imageUrl.replace(
+                  /^\//,
+                  ""
+                )}`
               : placeholderImage
           }
           alt={title}
