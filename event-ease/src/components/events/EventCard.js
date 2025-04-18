@@ -7,6 +7,7 @@ import "./EventCard.css";
 const EventCard = ({ event }) => {
   // Define your placeholder image path
   const placeholderImage = "/images/event-placeholder.png";
+  const BACKEND_URL = "https://your-backend-name.onrender.com";
 
   // Fallback values for missing data
   const {
@@ -55,7 +56,7 @@ const EventCard = ({ event }) => {
             imageUrl && imageUrl.startsWith("http")
               ? imageUrl
               : imageUrl
-              ? `/${imageUrl.replace(/^\//, "")}`
+              ? `${BACKEND_URL}/${imageUrl.replace(/^\//, "")}`
               : placeholderImage
           }
           alt={title}
