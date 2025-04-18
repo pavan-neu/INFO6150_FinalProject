@@ -2,9 +2,9 @@
 import axios from "axios";
 
 // Get transactions for a specific user (admin only)
-export const getUserTransactions = async (userId, page = 1, limit = 10) => {
+export const getUserTransactions = async (page = 1, limit = 10) => {
   try {
-    const response = await axios.get(`/users/${userId}/transactions`, {
+    const response = await axios.get(`/transactions/my-transactions`, {
       params: { page, limit },
     });
     return response.data;

@@ -156,7 +156,7 @@ const AdminEventDetailPage = () => {
   const imageUrl = event.imageUrl
     ? event.imageUrl.startsWith("http")
       ? event.imageUrl
-      : `http://localhost:5001/${event.imageUrl}` // Adjust the base URL as needed
+      : `https://info6150-finalproject.onrender.com/${event.imageUrl}` // Adjust the base URL as needed
     : "/images/event-placeholder.png";
 
   return (

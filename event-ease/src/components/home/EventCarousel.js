@@ -18,7 +18,10 @@ const EventCarousel = ({ events }) => {
 
         // If imageUrl is not a full URL but a relative path, prepend the backend URL
         if (imageUrl && !imageUrl.startsWith("http")) {
-          imageUrl = `http://localhost:5001/${imageUrl.replace(/^\//, "")}`;
+          imageUrl = `https://info6150-finalproject.onrender.com/${imageUrl.replace(
+            /^\//,
+            ""
+          )}`;
         }
 
         return (

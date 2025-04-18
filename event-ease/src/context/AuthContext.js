@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   // Configure axios defaults
-  axios.defaults.baseURL = "http://localhost:5001/api";
+  axios.defaults.baseURL = "https://info6150-finalproject.onrender.com/api";
 
   // Set up axios interceptor to ensure JWT is included in all requests
   useEffect(() => {

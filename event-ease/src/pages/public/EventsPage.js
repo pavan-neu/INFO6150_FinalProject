@@ -8,6 +8,49 @@ import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import AlertMessage from "../../components/ui/AlertMessage";
 import Pagination from "../../components/ui/Pagination";
 
+// Add custom CSS for filter container
+const filterContainerStyles = `
+  .filter-container {
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background-color: white;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  
+  .filter-content {
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-bottom: 12px; /* Space for the scrollbar */
+  }
+  
+  .filter-content::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+  
+  .filter-content::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 4px;
+  }
+  
+  .filter-content::-webkit-scrollbar-track {
+    background-color: rgba(0,0,0,0.05);
+  }
+  
+  @media (max-width: 768px) {
+    .filter-container {
+      max-height: 50vh;
+      margin-bottom: 20px;
+    }
+    
+    .filter-content {
+      min-width: max-content;
+    }
+  }
+`;
+
 const EventsPage = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +65,7 @@ const EventsPage = () => {
   // eslint-disable-next-line no-unused-vars
   const [isSearching, setIsSearching] = useState(false);
   const [hasNoSearchResults, setHasNoSearchResults] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const limit = 6; // Events per page
 
   // Fetch events with filters
@@ -167,6 +211,11 @@ const EventsPage = () => {
     setPage(1);
   };
 
+  // Toggle filter visibility on mobile
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+
   // Execute search when search query changes
   useEffect(() => {
     // Small debounce for search
@@ -188,6 +237,8 @@ const EventsPage = () => {
 
   return (
     <Container className="py-5">
+      {/* Add style tag for custom filter styles */}
+      <style>{filterContainerStyles}</style>
       <h1 className="mb-4">Explore Events</h1>
 
       <Row className="mb-4">
@@ -198,10 +249,21 @@ const EventsPage = () => {
             noResults={hasNoSearchResults}
           />
         </Col>
-        <Col md={4} className="text-md-end mt-3 mt-md-0">
+        <Col
+          md={4}
+          className="d-flex justify-content-between align-items-center mt-3 mt-md-0"
+        >
+          {/* Mobile filter toggle button */}
+          <button
+            className="btn btn-outline-primary d-md-none me-auto"
+            onClick={toggleFilters}
+          >
+            {showFilters ? "Hide Filters" : "Show Filters"}
+          </button>
+
           {isFiltering && (
             <button
-              className="btn btn-outline-secondary"
+              className="btn btn-outline-secondary ms-auto"
               onClick={handleClearFilters}
             >
               Clear All Filters
@@ -211,17 +273,31 @@ const EventsPage = () => {
       </Row>
 
       <Row>
-        <Col md={3} className="mb-4">
-          <EventFilter
-            selectedCategory={category}
-            onCategoryChange={handleCategoryChange}
-            priceRange={priceRange}
-            onPriceRangeChange={handlePriceRangeChange}
-            dateRange={dateRange}
-            onDateRangeChange={handleDateRangeChange}
-          />
+        {/* Filter column - hidden on mobile by default unless toggled */}
+        <Col
+          xs={12}
+          md={3}
+          className={`mb-4 ${showFilters ? "d-block" : "d-none d-md-block"}`}
+        >
+          <div
+            className="filter-container"
+            style={{ position: "sticky", top: "1rem", zIndex: 100 }}
+          >
+            <div className="filter-content">
+              <EventFilter
+                selectedCategory={category}
+                onCategoryChange={handleCategoryChange}
+                priceRange={priceRange}
+                onPriceRangeChange={handlePriceRangeChange}
+                dateRange={dateRange}
+                onDateRangeChange={handleDateRangeChange}
+              />
+            </div>
+          </div>
         </Col>
-        <Col md={9}>
+
+        {/* Events list column */}
+        <Col xs={12} md={9}>
           {loading ? (
             <LoadingSpinner />
           ) : error ? (

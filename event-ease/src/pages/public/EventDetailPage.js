@@ -194,7 +194,7 @@ const EventDetailPage = () => {
                   event.imageUrl && event.imageUrl.startsWith("http")
                     ? event.imageUrl
                     : event.imageUrl
-                    ? `http://localhost:5001/${event.imageUrl.replace(
+                    ? `https://info6150-finalproject.onrender.com/${event.imageUrl.replace(
                         /^\//,
                         ""
                       )}`
